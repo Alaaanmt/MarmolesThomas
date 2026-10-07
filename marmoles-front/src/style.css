@@ -1,0 +1,10 @@
+@import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
+@plugin "daisyui";
+html {
+    scroll-behavior: smooth;
+    font-family: 'Montserrat';
+}
+.arreglo-scroll {
+    scroll-margin-top: 14rem; 
+}
