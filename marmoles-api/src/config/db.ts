@@ -8,7 +8,6 @@ export function getPool() {
     const connectionString = process.env.DATABASE_URL;
 
     if (connectionString) {
-        console.log("Intentando conectar a Aiven con la URL provista...");
       pool = createPool({
         uri: connectionString,
         ssl: {
