@@ -2,7 +2,7 @@ import multer from "multer";
 import { randomUUID } from "crypto";
 import fs from "fs"
 import path from "path";
-import { Pool, ResultSetHeader } from "mysql2";
+import { Pool, ResultSetHeader } from "mysql2/promise"
 import { Request, Response } from "express";
 
 //Definir la ruta relativa dentro del proyecto
