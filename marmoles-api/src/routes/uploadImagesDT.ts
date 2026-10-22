@@ -34,7 +34,7 @@ export async function subirImagenDT(req: Request, res: Response) {
         );
 
         const [rowDetalle] = await pool.execute<ResultSetHeader>(
-            'INSERT INTO detallesTrabajos (nuestroTrabajoId, titulo, imagen_id) VALUES (?, ?, ?)',
+            'INSERT INTO detallestrabajos (nuestroTrabajoId, titulo, imagen_id) VALUES (?, ?, ?)',
             [nuestroTrabajoId, titulo, results[0].id]
         )
 
