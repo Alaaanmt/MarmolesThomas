@@ -9,12 +9,12 @@
       </router-link>
 
       <nav class="hidden md:flex gap-8 text-white font-semibold uppercase">
-        <a href="/#quienesSomos" class="h-8 transition-all duration-150 hover:border-b-4 hover:border-white ">Quienes
+        <a href="/#quienesSomos" @click.prevent="navigateToSection('quienesSomos')" class="h-8 transition-all duration-150 hover:border-b-4 hover:border-white ">Quienes
           somos</a>
-        <a href="/#nuestrosTrabajos"
+        <a href="/#nuestrosTrabajos" @click.prevent="navigateToSection('nuestrosTrabajos')"
           class="h-8 transition-all duration-150 hover:border-b-4 hover:border-white ">Nuestros Trabajos</a>
-        <a href="/#colores" class="h-8 transition-all duration-150 hover:border-b-4 hover:border-white ">Colores</a>
-        <a href="/#contacto" class="h-8 transition-all duration-150 hover:border-b-4 hover:border-white ">Contacto</a>
+        <a href="/#colores" @click.prevent="navigateToSection('colores')" class="h-8 transition-all duration-150 hover:border-b-4 hover:border-white ">Colores</a>
+        <a href="/#contacto" @click.prevent="navigateToSection('contacto')" class="h-8 transition-all duration-150 hover:border-b-4 hover:border-white ">Contacto</a>
       </nav>
 
 
@@ -33,20 +33,20 @@
         <nav
           class="text-center bg-gray-300 dark:bg-cyan-700 text-cyan-600 dark:text-white space-y-6 overflow-hidden text-sm px-4 rounded-b-lg font-semibold uppercase fixed top-24 right-0 transition-[height] "
           :class="burger ? 'h-46 py-4' : 'h-0'">
-          <RouterLink to="/#quienesSomos" @click="burger = false"
+          <a href="/#quienesSomos" @click.prevent="navigateToSection('quienesSomos')"
             class="block hover:text-cyan-500 cursor-pointer dark:hover:text-gray-400 transition-all duration-300">
-            Quienes somos</RouterLink>
-          <RouterLink to="/#nuestrosTrabajos" @click="burger = false"
+            Quienes somos</a>
+          <a href="/#nuestrosTrabajos" @click.prevent="navigateToSection('nuestrosTrabajos')"
             class="block hover:text-cyan-500 dark:hover:text-gray-400 cursor-pointer transition-all duration-300">
-            Nuestros Trabajos</RouterLink>
-          <RouterLink to="/#colores" @click="burger = false"
+            Nuestros Trabajos</a>
+          <a href="/#colores" @click.prevent="navigateToSection('colores')"
             class="block hover:text-cyan-500 dark:hover:text-gray-400 cursor-pointer transition-all duration-300">
             Colores
-          </RouterLink>
-          <RouterLink to="/#contacto" @click="burger = false"
+          </a>
+          <a href="/#contacto" @click.prevent="navigateToSection('contacto')"
             class="block hover:text-cyan-500 dark:hover:text-gray-400  cursor-pointer transition-all duration-300">
             Contacto
-          </RouterLink>
+          </a>
         </nav>
       </div>
 
@@ -61,9 +61,13 @@
       </label>
     </div>
 
-    <router-view>
-
-    </router-view>
+    <RouterView v-slot="{ Component }">
+      <Transition :name="transitionName" mode="out-in">
+        <div :key="route.path">
+          <component :is="Component" />
+        </div>
+      </Transition>
+    </RouterView>
     <!--Footer-->
     <footer v-if="!['/login', '/register', '/activation', '/password'].includes($route.path)" id="contacto"
       class="bg-cyan-800 text-white mt-12">
@@ -99,13 +103,18 @@
 
 <script setup lang="ts">
 // VUE
-import { ref } from 'vue';
-import { RouterLink } from 'vue-router';
+import { computed, nextTick, ref } from 'vue';
+import { RouterLink, RouterView, useRoute, useRouter } from 'vue-router';
 import { onMounted } from 'vue'; 
 
 //DATA
 const darkMode = ref(false);
 const burger = ref(false);
+const route = useRoute();
+const router = useRouter();
+const transitionName = computed(() => typeof route.meta.transition === 'string'
+  ? route.meta.transition
+  : 'page-fade-up');
 
 const social = [
   {
@@ -143,6 +152,35 @@ function dark() {
 function mandarMensaje(): string {
   let mensaje = "Quiero hacerle una consulta";
   return ("https://wa.me/5491121666225?text=" + encodeURI(mensaje))
+}
+
+async function navigateToSection(id: string) {
+  burger.value = false;
+  const changedPage = route.path !== '/';
+  if (changedPage || route.hash !== `#${id}`) {
+    await router.push({ path: '/', hash: `#${id}` });
+  }
+  if (changedPage) {
+    await new Promise(resolve => window.setTimeout(resolve, 400));
+  }
+  await nextTick();
+
+  const section = document.getElementById(id);
+  if (!section) return;
+
+  const start = window.scrollY;
+  const target = section.getBoundingClientRect().top + start - 112;
+  const startedAt = performance.now();
+  const duration = 1200;
+  const animate = (now: number) => {
+    const progress = Math.min((now - startedAt) / duration, 1);
+    const eased = progress < 0.5
+      ? 4 * progress ** 3
+      : 1 - Math.pow(-2 * progress + 2, 3) / 2;
+    window.scrollTo(0, start + (target - start) * eased);
+    if (progress < 1) requestAnimationFrame(animate);
+  };
+  requestAnimationFrame(animate);
 }
 
 

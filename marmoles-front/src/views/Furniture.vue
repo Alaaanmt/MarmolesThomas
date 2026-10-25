@@ -21,20 +21,19 @@
     <!--Trabajos-->
     <section class="pt-24 lg:px-48 md:px-24 px-8">
         <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
-            <div class="w-full h-full" v-for="item in detailsWorks" :key="item.id">
-               
-                <!--SKELETON-->
-                <template v-if="isLoading">
-                    <div v-for="n in 1" :key="n" class="skeleton w-full aspect-square"></div>
-                </template>
-
-                <!--Contenido-->
-                <div v-else id="imagen" class="">
-                    <img :src="item.path != null ? item.path : '/img/logo.png'" alt=""
-                        class="w-full h-full aspect-square object-cover rounded-md ">
+            <template v-if="isLoading">
+                <div v-for="n in 6" :key="n" class="w-full">
+                    <div class="skeleton w-full aspect-square"></div>
+                    <div class="skeleton h-4 w-2/3 mx-auto mt-4 mb-4"></div>
                 </div>
-                <p class="text-sm font-bold  text-center text-gray-800 dark:text-gray-200 mb-4">{{ item.titulo }}</p>
-            </div>
+            </template>
+            <template v-else>
+                <div class="w-full h-full" v-for="item in detailsWorks" :key="item.id">
+                    <img :src="item.path != null ? item.path : '/img/logo.png'" alt=""
+                        class="w-full aspect-square object-cover rounded-md ">
+                    <p class="text-sm font-bold text-center text-gray-800 dark:text-gray-200 mb-4">{{ item.titulo }}</p>
+                </div>
+            </template>
         </div>
     </section>
 

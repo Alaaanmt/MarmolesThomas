@@ -16,6 +16,12 @@ import Color from '@/views/Color.vue';
 import Measures from '@/views/Measures.vue';
 import Abstract from '@/views/Abstract.vue';
 
+declare module 'vue-router' {
+  interface RouteMeta {
+    scrollToTopOnBack?: boolean;
+  }
+}
+
 const routes = [
     { path: '/', component: Home },
     { path: '/login', component: Login },
@@ -27,37 +33,27 @@ const routes = [
     { path: '/detailsQuartz', component: DetailsQuartz },
     { path: '/detailsFurniture', component: DetailsFurniture },
     { path: '/countertop', component: Countertop },
-    { path: '/furniture', component: Furniture},
-    { path: '/vanity', component: Vanity},
-    { path: '/createOrder', component: CreateOrder },
-    { path: '/color/:colorId', component: Color },
-    { path: '/measures/:medidaId', component: Measures },
-    { path: '/abstract/:resumenId', component: Abstract },
+    { path: '/furniture', component: Furniture },
+    { path: '/vanity', component: Vanity },
+    { path: '/createOrder', component: CreateOrder, meta: { scrollToTopOnBack: true } },
+    { path: '/color/:colorId', component: Color, meta: { scrollToTopOnBack: true } },
+    { path: '/measures/:medidaId', component: Measures, meta: { scrollToTopOnBack: true } },
+    { path: '/abstract/:resumenId', component: Abstract, meta: { scrollToTopOnBack: true } },
 ];
-
 
 const router = createRouter({
   history: createWebHistory(),
   routes,
-  scrollBehavior(to, from, savedPosition) {
-    // Si vuelve atrás/adelante
-    if (savedPosition) {
-      return savedPosition;
-    }
+  scrollBehavior(to, _from, savedPosition) {
+    if (savedPosition && !to.meta.scrollToTopOnBack) return savedPosition;
 
-    // Si la ruta tiene hash (#seccion)
     if (to.hash) {
-      return {
-        el: to.hash,
-        behavior: 'smooth',
-        top: 116
-      };
+      return false;
     }
 
-    // Scroll normal al cambiar de ruta
     return {
       top: 0,
-      behavior: 'smooth'
+      behavior: 'instant'
     };
   },
 });

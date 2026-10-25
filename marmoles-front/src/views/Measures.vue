@@ -43,10 +43,10 @@
             </div>
             <!--CHECKS-->
             <div class="pt-4 flex text-sm md:text-base">
-                <input type="checkbox" class="mr-2" v-model="conZocalo"> Con Zócalo
+                <input type="checkbox" class="order-checkbox mr-2" v-model="conZocalo"> Con Zócalo
             </div>
             <div class="pt-2 flex text-sm md:text-base">
-                <input type="checkbox" class="mr-2" v-model="medidasBloqueadas" @change="buttonDisabled2()"> Toma de
+                <input type="checkbox" class="order-checkbox mr-2" v-model="medidasBloqueadas" @change="buttonDisabled2()"> Toma de
                 medidas en tu domicilio (no se
                 cotiza)
             </div>
@@ -93,7 +93,7 @@
             </div>
             <!--CHECKS-->
             <div class="pt-2 flex text-sm md:text-base">
-                <input type="checkbox" class="mr-2" v-model="medidasBloqueadas" @change="buttonDisabled2()"> Toma de
+                <input type="checkbox" class="order-checkbox mr-2" v-model="medidasBloqueadas" @change="buttonDisabled2()"> Toma de
                 medidas en tu domicilio (no se
                 cotiza)
             </div>
@@ -140,10 +140,10 @@
             </div>
             <!--CHECKS-->
             <div class="pt-4 flex text-sm md:text-base">
-                <input type="checkbox" class="mr-2" v-model="sinMueble"> Con Mueble
+                <input type="checkbox" class="order-checkbox mr-2" v-model="sinMueble"> Con Mueble
             </div>
             <div class="pt-2 flex text-sm md:text-base">
-                <input type="checkbox" class="mr-2" v-model="medidasBloqueadas" @change="buttonDisabled2()"> Toma de
+                <input type="checkbox" class="order-checkbox mr-2" v-model="medidasBloqueadas" @change="buttonDisabled2()"> Toma de
                 medidas en tu domicilio (no se
                 cotiza)
             </div>

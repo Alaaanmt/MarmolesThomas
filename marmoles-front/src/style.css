@@ -2,9 +2,114 @@
 @custom-variant dark (&:where(.dark, .dark *));
 @plugin "daisyui";
 html {
-    scroll-behavior: smooth;
+    scroll-behavior: auto;
     font-family: 'Montserrat';
+}
+html,
+body,
+#app {
+    overflow-x: clip;
 }
 .arreglo-scroll {
     scroll-margin-top: 14rem; 
+}
+
+.page-fade-up-enter-active,
+.page-fade-up-leave-active {
+    transition: opacity 350ms ease, transform 350ms ease;
+}
+
+.page-fade-up-enter-from {
+    opacity: 0;
+    transform: translateY(1.5rem);
+}
+
+.page-fade-up-leave-to {
+    opacity: 0;
+    transform: translateY(-1.5rem);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .page-fade-up-enter-active,
+    .page-fade-up-leave-active {
+        transition-duration: 1ms;
+    }
+}
+
+.color-swiper-arrow {
+    width: 2.75rem !important;
+    height: 2.75rem !important;
+    top: calc(50% - 0.875rem) !important;
+    margin-top: 0 !important;
+    display: grid !important;
+    place-items: center;
+    border: 1px solid rgb(255 255 255 / 75%);
+    border-radius: 9999px;
+    color: white !important;
+    background: linear-gradient(145deg, #06b6d4, #0e7490);
+    box-shadow: 0 5px 16px rgb(8 145 178 / 35%);
+    transform: translateY(-50%);
+    transition: background 180ms ease, box-shadow 180ms ease, scale 180ms ease;
+}
+
+.color-swiper-arrow:hover {
+    background: linear-gradient(145deg, #22d3ee, #0e7490);
+    box-shadow: 0 7px 20px rgb(8 145 178 / 45%);
+    scale: 1.08;
+}
+
+.color-swiper-arrow::after {
+    display: none !important;
+}
+
+.color-swiper-arrow svg {
+    width: 1.25rem;
+    height: 1.25rem;
+    fill: none;
+    stroke: currentColor;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-width: 2.25;
+}
+
+.color-swiper-arrow.swiper-button-prev {
+    left: 0.5rem;
+}
+
+.color-swiper-arrow.swiper-button-next {
+    right: 0.5rem;
+}
+
+.order-checkbox {
+    appearance: none;
+    width: 1.25rem;
+    height: 1.25rem;
+    flex: 0 0 1.25rem;
+    border: 2px solid #9ca3af;
+    border-radius: 0.35rem;
+    background-color: white;
+    cursor: pointer;
+    display: inline-grid;
+    place-content: center;
+    vertical-align: middle;
+    transition: background-color 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
+}
+
+.order-checkbox:checked {
+    border-color: #0891b2;
+    background-color: #0891b2;
+}
+
+.order-checkbox:checked::after {
+    content: "";
+    width: 0.35rem;
+    height: 0.65rem;
+    border: solid white;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg) translate(-1px, -1px);
+}
+
+.order-checkbox:focus-visible {
+    outline: 2px solid #06b6d4;
+    outline-offset: 2px;
 }

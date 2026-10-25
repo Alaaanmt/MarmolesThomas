@@ -39,8 +39,12 @@
                     </div>
                 </div>
             </div>
-            <div class="swiper-button-next"></div>
-            <div class="swiper-button-prev"></div>
+            <button type="button" class="swiper-button-next color-swiper-arrow" aria-label="Ver más granitos">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h15m-6-6 6 6-6 6" /></svg>
+            </button>
+            <button type="button" class="swiper-button-prev color-swiper-arrow" aria-label="Ver granitos anteriores">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12H5m6 6-6-6 6-6" /></svg>
+            </button>
         </div>
         <!--Silestones-->
         <p class="text-center text-xl font-semibold pt-8 pb-4  dark:text-cyan-700">Silestones</p>
@@ -70,8 +74,12 @@
                     </div>
                 </div>
             </div>
-            <div class="swiper-button-next"></div>
-            <div class="swiper-button-prev"></div>
+            <button type="button" class="swiper-button-next color-swiper-arrow" aria-label="Ver más silestones">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h15m-6-6 6 6-6 6" /></svg>
+            </button>
+            <button type="button" class="swiper-button-prev color-swiper-arrow" aria-label="Ver silestones anteriores">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12H5m6 6-6-6 6-6" /></svg>
+            </button>
         </div>
         <!--Marmoles-->
         <p class="text-center text-xl font-semibold dark:text-cyan-700 pt-8 pb-4">Marmoles</p>
@@ -101,8 +109,12 @@
                     </div>
                 </div>
             </div>
-            <div class="swiper-button-next"></div>
-            <div class="swiper-button-prev"></div>
+            <button type="button" class="swiper-button-next color-swiper-arrow" aria-label="Ver más mármoles">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h15m-6-6 6 6-6 6" /></svg>
+            </button>
+            <button type="button" class="swiper-button-prev color-swiper-arrow" aria-label="Ver mármoles anteriores">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12H5m6 6-6-6 6-6" /></svg>
+            </button>
         </div>
     </section>
 
@@ -137,8 +149,12 @@
                     </div>
                 </div>
             </div>
-            <div class="swiper-button-next"></div>
-            <div class="swiper-button-prev"></div>
+            <button type="button" class="swiper-button-next color-swiper-arrow" aria-label="Ver más melaminas">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h15m-6-6 6 6-6 6" /></svg>
+            </button>
+            <button type="button" class="swiper-button-prev color-swiper-arrow" aria-label="Ver melaminas anteriores">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12H5m6 6-6-6 6-6" /></svg>
+            </button>
         </div>
     </section>
 
@@ -154,7 +170,7 @@
 <script setup lang="ts">
 
 // VUE
-import { onBeforeMount, onMounted, ref, nextTick } from 'vue';
+import { onMounted, ref, nextTick } from 'vue';
 import { useRoute } from 'vue-router';
 import { useOrderStore } from '@/stores/Order';
 
@@ -273,15 +289,15 @@ const initRealSwipers = () => {
         new Swiper(selector, {
             ...swiperConfig,
             navigation: {
-                nextEl: `${selector} .swiper-button-next`,
-                prevEl: `${selector} .swiper-button-prev`,
+                nextEl: `${selector} .color-swiper-arrow.swiper-button-next`,
+                prevEl: `${selector} .color-swiper-arrow.swiper-button-prev`,
             },
         });
     });
 };
 
 //LIFECYCLES
-onBeforeMount(async () => {
+onMounted(async () => {
     try {
         const responseDG = await axios.get(base + '/granitodetalles');
         granites.value = responseDG.data.data;
@@ -297,31 +313,9 @@ onBeforeMount(async () => {
     finally {
         isLoading.value = false;
 
-        await nextTick(); // 2. IMPORTANTE: Esperamos a que Vue dibuje el v-else
-        
-        initRealSwipers(); // 3. Ahora sí, inicializamos los materiales reales
-    
+        await nextTick();
+        initRealSwipers();
     }
-});
-
-onMounted(() => {
-    //swiper creation
-    new Swiper(".granitos", {
-        ...swiperConfig,
-    });
-    new Swiper(".quartz", {
-        ...swiperConfig,
-    });
-    new Swiper(".marmoles", {
-        ...swiperConfig,
-    });
-    new Swiper(".melaminas", {
-        ...swiperConfig,
-    });
-    new Swiper(".skeleton-swiper", {
-        ...swiperConfig,
-    });
-
 });
 
 </script>

@@ -1,28 +1,32 @@
 <template>
     <!--Detalles de Mesadas-->
     <section class="pt-32 md:px-48 px-12">
-        <div v-for="item in detailsGranite" :key="item.id">
-            <div class="w-full h-full flex flex-col md:flex-row space-x-10">
-                <div class="w-full flex flex-col justify-center">
-                    <h2 class="text-xl md:text-2xl font-bold text-cyan-600 mb-4">{{ item.color }}</h2>
-                    <p class="text-[12px] md:text-sm text-gray-700 dark:text-gray-200 mb-6">{{ item.detalle }}
-                    </p>
+        <template v-if="isLoading">
+            <div v-for="n in 4" :key="n" class="w-full flex flex-col md:flex-row gap-6 md:gap-10">
+                <div class="w-full flex flex-col justify-center gap-4">
+                    <div class="skeleton h-7 w-1/3"></div>
+                    <div class="skeleton h-4 w-full"></div>
+                    <div class="skeleton h-4 w-5/6"></div>
                 </div>
-
-                <!--SKELETON-->
-                <template v-if="isLoading">
-                    <div v-for="n in 1" :key="n" class="skeleton w-1/3 h-1/3 md:w-1/4 md:h-1/4 aspect-square"></div>
-                </template>
-
-                <!--Contenido-->
-                <div v-else id="imagen" class="w-1/3 h-1/3 md:w-1/4 md:h-1/4 mx-auto">
-                    <img :src="item.path != null ? item.path : '/img/logo.png'" alt=""
-                        class="w-full h-full aspect-square object-cover rounded-md ">
-                </div>
+                <div class="skeleton w-full md:w-1/4 aspect-square mx-auto"></div>
             </div>
-            <!--Separador-->
-            <div class="border my-10 border-gray-200 dark:border-gray-600"></div>
-        </div>
+            <div v-for="n in 3" :key="`separator-${n}`" class="border my-10 border-gray-200 dark:border-gray-600"></div>
+        </template>
+        <template v-else>
+            <div v-for="item in detailsGranite" :key="item.id">
+                <div class="w-full h-full flex flex-col md:flex-row gap-6 md:gap-10">
+                    <div class="w-full flex flex-col justify-center">
+                        <h2 class="text-xl md:text-2xl font-bold text-cyan-600 mb-4">{{ item.color }}</h2>
+                        <p class="text-[12px] md:text-sm text-gray-700 dark:text-gray-200 mb-6">{{ item.detalle }}</p>
+                    </div>
+                    <div class="w-1/3 h-1/3 md:w-1/4 md:h-1/4 mx-auto">
+                        <img :src="item.path != null ? item.path : '/img/logo.png'" alt=""
+                            class="w-full h-full aspect-square object-cover rounded-md ">
+                    </div>
+                </div>
+                <div class="border my-10 border-gray-200 dark:border-gray-600"></div>
+            </div>
+        </template>
     </section>
 
 

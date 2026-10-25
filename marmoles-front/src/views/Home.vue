@@ -23,7 +23,7 @@
     <div class=" border mb-10 border-gray-200 dark:border-gray-600"></div>
 
     <!--QuienesSomos-->
-    <section id="quienesSomos" class="flex flex-col items-center arreglo-scroll" data-aos="zoom-in"
+    <section id="quienesSomos" class="flex flex-col items-center arreglo-scroll" data-aos="fade-up"
         data-aos-duration="1500">
         <div class="flex px-8 md:px-48 text-xl text-center md:text-2xl lg:text-3xl gap-2">
             <p class="text-cyan-600">MARMOLES THOMAS</p>
@@ -46,7 +46,7 @@
     <div class="border my-10 border-gray-200 dark:border-gray-600"></div>
 
     <!--NuestrosTrabajos-->
-    <section id="nuestrosTrabajos" class="px-4 md:px-40 lg:px-48 arreglo-scroll" data-aos="zoom-in"
+    <section id="nuestrosTrabajos" class="px-4 md:px-40 lg:px-48 arreglo-scroll" data-aos="fade-up"
         data-aos-duration="1000">
         <p class="text-center text-2xl md:text-3xl lg:text-4xl text-cyan-600 uppercase font-semibold">Nuestros
             Trabajos
@@ -81,10 +81,10 @@
     <div class="border my-10 border-gray-200 dark:border-gray-600"></div>
 
     <!--Colores-->
-    <section id="colores" class="arreglo-scroll" data-aos="zoom-in" data-aos-duration="1000">
+    <section id="colores" class="arreglo-scroll">
         <!--Colores Mesada-->
-        <p class="text-center text-2xl md:text-3xl lg:text-4xl text-cyan-600 uppercase font-semibold">Colores</p>
-        <div class="w-full grid grid-cols-2 lg:grid lg:grid-cols-3 gap-4 pt-10 lg:px-48 md:px-40 px-4">
+        <p class="text-center text-2xl md:text-3xl lg:text-4xl text-cyan-600 uppercase font-semibold" data-aos="fade-up">Colores</p>
+        <div class="w-full grid grid-cols-2 lg:grid lg:grid-cols-3 gap-4 pt-10 lg:px-48 md:px-40 px-4" data-aos="fade-up">
 
             <!--SKELETON-->
             <template v-if="isLoading">
@@ -105,7 +105,8 @@
             </div>
         </div>
         <div
-            class="flex flex-col lg:grid lg:grid-cols-3 justify-between space-y-2 text-center pt-2  font-bold  lg:px-46 md:px-40 px-12">
+            class="flex flex-col lg:grid lg:grid-cols-3 justify-between space-y-2 text-center pt-2 font-bold lg:px-46 md:px-40 px-12"
+            data-aos="fade-up">
             <div class="flex justify-center gap-1" v-for="item in seeMore" :key="item.id">
                 <RouterLink :to="item.link"
                     class="text-cyan-500 hover:text-cyan-700 cursor-pointer transition-all duration-300 ">{{
@@ -116,7 +117,7 @@
         <!--Separador-->
         <div class="border my-10 border-gray-200 dark:border-gray-600"></div>
         <!--Colores Melamina-->
-        <div class="w-full grid grid-cols-2 lg:grid lg:grid-cols-3 gap-4 pt-10 lg:px-48 md:px-40 px-4">
+        <div class="w-full grid grid-cols-2 lg:grid lg:grid-cols-3 gap-4 pt-10 lg:px-48 md:px-40 px-4" data-aos="fade-up">
 
             <!--SKELETON-->
             <template v-if="isLoading">
@@ -138,14 +139,17 @@
             </div>
         </div>
         <RouterLink to="/detailsFurniture"
-            class="block text-center text-cyan-500 font-bold cursor-pointer hover:text-cyan-700 transition-all duration-300 pt-2">
+            class="block text-center text-cyan-500 font-bold cursor-pointer hover:text-cyan-700 transition-all duration-300 pt-2"
+            data-aos="fade-up">
             Ver
             detalles de Melamina</RouterLink>
         <!--Separador-->
         <div class="border my-10 border-gray-200 dark:border-gray-600"></div>
         <!--Colores Vanitorys-->
         <div
-            class="w-full grid grid-cols-4 space-y-4 lg:space-y-0 lg:grid lg:grid-cols-3 gap-4 pt-10 lg:px-48 md:px-40 px-4">
+            class="w-full grid grid-cols-4 space-y-4 lg:space-y-0 lg:grid lg:grid-cols-3 gap-4 pt-10 lg:px-48 md:px-40 px-4"
+            data-aos="fade-up"
+        >
 
             <!--SKELETON-->
             <template v-if="isLoading">
@@ -171,7 +175,8 @@
             fabricarse en granito, mármol o silestone, en cualquiera de los colores disponibles.</p>
 
         <RouterLink to="/vanity"
-            class="block text-center text-cyan-500 font-bold cursor-pointer hover:text-cyan-700 transition-all duration-300 pt-2">
+            class="block text-center text-cyan-500 font-bold cursor-pointer hover:text-cyan-700 transition-all duration-300 pt-2"
+            data-aos="fade-up">
             Ver más Vanitorys</RouterLink>
     </section>
 
@@ -199,8 +204,6 @@ Swiper.use([Autoplay]);
 //AOS
 import AOS from 'aos'
 import 'aos/dist/aos.css'
-
-
 
 // DATA
 const imagesCarrousel = [
@@ -251,7 +254,6 @@ const isLoading = ref(true);
 
 // LIFECYCLES
 onBeforeMount(async () => {
-    
     try {
         const responseNT = await axios.get(base +'/nuestrostrabajos');
         works.value = responseNT.data.data; 
@@ -272,7 +274,6 @@ onBeforeMount(async () => {
 });
 
 onMounted(() => {
-    //swiper creation
     new Swiper(".mesadas", {
         autoplay: {
             delay: 2000,
@@ -281,6 +282,6 @@ onMounted(() => {
         speed: 1000,
         loop: true,
     });
-    AOS.init()
+    AOS.init({ once: true, duration: 800, offset: 100 })
 });
 </script>

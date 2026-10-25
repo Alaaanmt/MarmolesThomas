@@ -1,49 +1,45 @@
-import { Request, Response } from 'express';
+import { NextFunction, Request, Response } from 'express';
 import { getPool } from '../config/db';
-import { persistImages, runMulter } from '../utils/upload'
-import { Pool, ResultSetHeader } from "mysql2";
+import { persistImages, removeUploadedFiles, runMulter } from '../utils/upload';
+import { PoolConnection, ResultSetHeader } from 'mysql2/promise';
 
-export async function subirImagenDT(req: Request, res: Response) {
+export async function subirImagenDT(req: Request, res: Response, next: NextFunction) {
+    const files = await runMulter(req, res);
+    let connection: PoolConnection | undefined;
     try {
-        const files = await runMulter(req, res);
-        
-        const { nuestroTrabajoId, titulo } = req.body as {
-            nuestroTrabajoId?: number,
-            titulo?: string
-        };
+        const body = req.body as Record<string, unknown>;
+        const nuestroTrabajoId = Number(body.nuestroTrabajoId);
+        const titulo = typeof body.titulo === 'string' ? body.titulo.trim() : '';
 
-        if (!files || files.length === 0) {
+        if (!Number.isInteger(nuestroTrabajoId) || nuestroTrabajoId < 1 || !titulo) {
+            await removeUploadedFiles(files);
+            return res.status(400).json({
+                status: 'error',
+                message: 'Se requiere un "nuestroTrabajoId" válido y un "titulo"'
+            });
+        }
+
+        if (files.length === 0) {
             return res.status(400).json({
                 status: 'error',
                 message: 'No se envió ninguna imagen'
             });
         }
 
-        if (!nuestroTrabajoId || !titulo) {
-            return res.status(400).json({
-                status: 'error',
-                message: 'Se requiere "nuestroTrabajoId" y "titulo"'
-            });
-        }
-
         const pool = getPool();
-
-        const results = await persistImages(
-            files,
-            pool as any
-        );
-
-        const [rowDetalle] = await pool.execute<ResultSetHeader>(
+        connection = await pool.getConnection();
+        await connection.beginTransaction();
+        const results = await persistImages(files, connection);
+        const [rowDetalle] = await connection.execute<ResultSetHeader>(
             'INSERT INTO detallestrabajos (nuestroTrabajoId, titulo, imagen_id) VALUES (?, ?, ?)',
             [nuestroTrabajoId, titulo, results[0].id]
-        )
+        );
+        await connection.commit();
 
-        const idDetalleTrabajo = rowDetalle.insertId;
-
-        return res.json({
+        return res.status(201).json({
             status: 'ok',
             data: {
-                id: idDetalleTrabajo,
+                id: rowDetalle.insertId,
                 titulo: titulo,
                 nuestroTrabajoId: nuestroTrabajoId,
                 imagen: {
@@ -53,10 +49,11 @@ export async function subirImagenDT(req: Request, res: Response) {
                 }
             }
         });
-    } catch (error: any) {
-        return res.status(500).json({
-            status: 'error',
-            message: error.message
-        });
+    } catch (error) {
+        if (connection) await connection.rollback();
+        await removeUploadedFiles(files);
+        return next(error);
+    } finally {
+        connection?.release();
     }
 }
