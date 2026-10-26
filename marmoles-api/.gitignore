@@ -20,3 +20,6 @@ Thumbs.db
 
 # Carpeta de subidas locales (para que las imágenes/uploads que suban los usuarios no pisen el repo)
 uploads/
+
+# Skills o configuraciones de agentes locales
+.agents/skills/design-taste-frontend
