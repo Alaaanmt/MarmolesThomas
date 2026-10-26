@@ -34,7 +34,7 @@ router.get('/melaminadetalles', detallesMelamina)
 
 router.get('/silestonedetalles', detallesSilestone)
 
-router.post('/granitodetalles', requireAdminApiKey, crearMaterial('granite'))
+router.post('/granitodetalles', crearMaterial('granite'))
 router.put('/granitodetalles/:id', requireAdminApiKey, actualizarMaterial('granite'))
 router.delete('/granitodetalles/:id', requireAdminApiKey, eliminarMaterial('granite'))
 

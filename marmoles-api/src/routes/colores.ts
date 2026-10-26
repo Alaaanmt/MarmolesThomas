@@ -1,6 +1,7 @@
 import { getPool } from "../config/db";
 import { Request, Response } from "express";
 import { RowDataPacket } from 'mysql2';
+import { resolveImageUrl } from '../utils/imageUrl';
 
 export async function colorGranito(req: Request, res: Response) {
   const pool = getPool();
@@ -18,9 +19,9 @@ export async function colorGranito(req: Request, res: Response) {
   const [rows] = await pool.query<RowDataPacket[]>(query);
   const baseUrl = `${req.protocol}://${req.get('host')}`;
 
-  rows.forEach((row: any) => {
-    if (row.path) {
-      row.path = `${baseUrl}${row.path}`;
+  rows.forEach((row: RowDataPacket) => {
+    if (typeof row.path === 'string' && row.path) {
+      row.path = resolveImageUrl(row.path, baseUrl);
     }
   });
 
@@ -34,9 +35,9 @@ export async function colorMelamina(req: Request, res: Response) {
   const [rows] = await pool.query<RowDataPacket[]>(query);
   const baseUrl = `${req.protocol}://${req.get('host')}`;
 
-  rows.forEach((row: any) => {
-    if (row.path) {
-      row.path = `${baseUrl}${row.path}`;
+  rows.forEach((row: RowDataPacket) => {
+    if (typeof row.path === 'string' && row.path) {
+      row.path = resolveImageUrl(row.path, baseUrl);
     }
   });
 
@@ -50,9 +51,9 @@ export async function colorVanitory(req: Request, res: Response) {
   const [rows] = await pool.query<RowDataPacket[]>(query);
   const baseUrl = `${req.protocol}://${req.get('host')}`;
 
-  rows.forEach((row: any) => {
-    if (row.path) {
-      row.path = `${baseUrl}${row.path}`;
+  rows.forEach((row: RowDataPacket) => {
+    if (typeof row.path === 'string' && row.path) {
+      row.path = resolveImageUrl(row.path, baseUrl);
     }
   });
 

@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { getPool } from '../config/db';
 import { RowDataPacket } from 'mysql2';
+import { resolveImageUrl } from '../utils/imageUrl';
 
 export async function trabajos(req: Request, res: Response) {
   const pool = getPool();
@@ -9,9 +10,9 @@ export async function trabajos(req: Request, res: Response) {
   const [rows] = await pool.query<RowDataPacket[]>(query);
   const baseUrl = `${req.protocol}://${req.get('host')}`;
 
-  rows.forEach((row: any) => {
-    if (row.path) {
-      row.path = `${baseUrl}${row.path}`;
+  rows.forEach((row: RowDataPacket) => {
+    if (typeof row.path === 'string' && row.path) {
+      row.path = resolveImageUrl(row.path, baseUrl);
     }
   });
 
@@ -25,9 +26,9 @@ export async function trabajosPorId(req: Request, res: Response) {
   const [rows] = await pool.query<RowDataPacket[]>(query, [req.params.id]);
   const baseUrl = `${req.protocol}://${req.get('host')}`;
 
-  rows.forEach((row: any) => {
-    if (row.path) {
-      row.path = `${baseUrl}${row.path}`;
+  rows.forEach((row: RowDataPacket) => {
+    if (typeof row.path === 'string' && row.path) {
+      row.path = resolveImageUrl(row.path, baseUrl);
     }
   });
 
