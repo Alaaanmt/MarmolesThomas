@@ -15,11 +15,12 @@
         <p class="text-center text-xl font-semibold pb-4 dark:text-cyan-700">Granitos</p>
 
         <!--SKELETON-->
-        <div v-if="isLoading" class="swiper skeleton-swiper">
+        <div v-if="isLoading" class="swiper skeleton-granitos">
             <div class="swiper-wrapper">
                 <div v-for="n in 5" :key="n" class="swiper-slide">
                     <div class="flex flex-col items-center">
-                        <div class="skeleton w-32 aspect-square rounded-full"></div>
+                        <div class="skeleton h-32 w-32 rounded-full"></div>
+                        <div class="skeleton h-4 w-24 mt-2"></div>
                     </div>
                 </div>
             </div>
@@ -50,11 +51,12 @@
         <p class="text-center text-xl font-semibold pt-8 pb-4  dark:text-cyan-700">Silestones</p>
 
         <!--SKELETON-->
-        <div v-if="isLoading" class="swiper skeleton-swiper">
+        <div v-if="isLoading" class="swiper skeleton-quartz">
             <div class="swiper-wrapper">
                 <div v-for="n in 5" :key="n" class="swiper-slide">
                     <div class="flex flex-col items-center">
-                        <div class="skeleton w-32 aspect-square rounded-full"></div>
+                        <div class="skeleton h-32 w-32 rounded-full"></div>
+                        <div class="skeleton h-4 w-24 mt-2"></div>
                     </div>
                 </div>
             </div>
@@ -85,11 +87,12 @@
         <p class="text-center text-xl font-semibold dark:text-cyan-700 pt-8 pb-4">Marmoles</p>
 
         <!--SKELETON-->
-        <div v-if="isLoading" class="swiper skeleton-swiper">
+        <div v-if="isLoading" class="swiper skeleton-marmoles">
             <div class="swiper-wrapper">
                 <div v-for="n in 3" :key="n" class="swiper-slide">
                     <div class="flex flex-col items-center">
-                        <div class="skeleton w-32 aspect-square rounded-full"></div>
+                        <div class="skeleton h-32 w-32 rounded-full"></div>
+                        <div class="skeleton h-4 w-24 mt-2"></div>
                     </div>
                 </div>
             </div>
@@ -109,12 +112,6 @@
                     </div>
                 </div>
             </div>
-            <button type="button" class="swiper-button-next color-swiper-arrow" aria-label="Ver más mármoles">
-                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h15m-6-6 6 6-6 6" /></svg>
-            </button>
-            <button type="button" class="swiper-button-prev color-swiper-arrow" aria-label="Ver mármoles anteriores">
-                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12H5m6 6-6-6 6-6" /></svg>
-            </button>
         </div>
     </section>
 
@@ -125,11 +122,12 @@
         <p class="text-center text-xl font-semibold pt-8 pb-4 dark:text-cyan-700">Melaminas</p>
        
         <!--SKELETON-->
-        <div v-if="isLoading" class="swiper skeleton-swiper">
+        <div v-if="isLoading" class="swiper skeleton-melaminas">
             <div class="swiper-wrapper">
                 <div v-for="n in 5" :key="n" class="swiper-slide">
                     <div class="flex flex-col items-center">
-                        <div class="skeleton w-32 aspect-square rounded-full"></div>
+                        <div class="skeleton h-32 w-32 rounded-full"></div>
+                        <div class="skeleton h-4 w-24 mt-2"></div>
                     </div>
                 </div>
             </div>
@@ -228,6 +226,19 @@ const swiperConfig = {
     },
 };
 
+const marbleSwiperConfig = {
+    speed: 1000,
+    loop: false,
+    slidesPerView: 2,
+    slidesPerGroup: 2,
+    spaceBetween: 0,
+    breakpoints: {
+        768: { slidesPerView: 3, slidesPerGroup: 3, spaceBetween: 16 },
+        1024: { slidesPerView: 3, slidesPerGroup: 3, spaceBetween: 16 },
+    },
+};
+const skeletonSwipers: Swiper[] = [];
+
 //Functions
 function selectColorGranite(id: number) {
     if (selectedColorGranite.value === id) { //si vuevlo a hacer click en el mismo ahi lo desselecciono
@@ -286,18 +297,43 @@ function selectColor(id: number, color: string) {
 const initRealSwipers = () => { 
     const selectors = [".granitos", ".quartz", ".marmoles", ".melaminas"];
     selectors.forEach(selector => {
-        new Swiper(selector, {
-            ...swiperConfig,
-            navigation: {
-                nextEl: `${selector} .color-swiper-arrow.swiper-button-next`,
-                prevEl: `${selector} .color-swiper-arrow.swiper-button-prev`,
-            },
-        });
+        const config = selector === '.marmoles'
+            ? marbleSwiperConfig
+            : {
+                ...swiperConfig,
+                navigation: {
+                    nextEl: `${selector} .color-swiper-arrow.swiper-button-next`,
+                    prevEl: `${selector} .color-swiper-arrow.swiper-button-prev`,
+                },
+            };
+        new Swiper(selector, config);
+    });
+};
+
+const initSkeletonSwipers = () => {
+    const selectors = [
+        '.skeleton-granitos',
+        '.skeleton-quartz',
+        '.skeleton-marmoles',
+        '.skeleton-melaminas',
+    ];
+
+    selectors.forEach(selector => {
+        const element = document.querySelector<HTMLElement>(selector);
+        if (!element) return;
+
+        const config = selector === '.skeleton-marmoles' ? marbleSwiperConfig : swiperConfig;
+        skeletonSwipers.push(new Swiper(element, {
+            ...config,
+            loop: false,
+            allowTouchMove: false,
+        }));
     });
 };
 
 //LIFECYCLES
 onMounted(async () => {
+    initSkeletonSwipers();
     try {
         const responseDG = await axios.get(base + '/granitodetalles');
         granites.value = responseDG.data.data;
@@ -311,6 +347,8 @@ onMounted(async () => {
         console.error('Error fetching data:', error);
     }
     finally {
+        skeletonSwipers.forEach(swiper => swiper.destroy(true, true));
+        skeletonSwipers.length = 0;
         isLoading.value = false;
 
         await nextTick();

@@ -1,16 +1,18 @@
 # API de Mármoles Thomas
 
-## Imágenes en Render
+## Imágenes en Cloudinary
 
-La API guarda los archivos en `UPLOAD_DIR`. Si no se define, usa `uploads/` dentro de `marmoles-api`, independientemente del directorio desde el que arranque Node.
+La API sube las imágenes a Cloudinary y guarda en MySQL el `public_id` y la URL HTTPS (`secure_url`). Configurá estas variables de entorno en el servicio de la API (por ejemplo, Render):
 
-El disco del contenedor de Render es efímero. Para que las imágenes sigan disponibles después de un redeploy o reinicio:
+| Variable | Valor |
+| --- | --- |
+| `CLOUDINARY_CLOUD_NAME` | Cloud name de la cuenta |
+| `CLOUDINARY_API_KEY` | API key de la cuenta |
+| `CLOUDINARY_API_SECRET` | API secret de la cuenta |
 
-1. Añadí un Persistent Disk al servicio de Render, montado en `/var/data`.
-2. Configurá `UPLOAD_DIR=/var/data/uploads` en las variables de entorno del servicio.
-3. Redeplegá la API. La aplicación crea el subdirectorio si no existe.
+Las credenciales deben estar solo en el backend, nunca en el frontend. Los endpoints de subida fallan con un error explícito si falta alguna variable. Las imágenes nuevas no necesitan un disco persistente. Se mantiene `/uploads` para servir imágenes antiguas guardadas localmente; conservá esas imágenes en `marmoles-api/uploads` o migrá sus registros a Cloudinary antes de quitar el almacenamiento previo.
 
-La base de datos Aiven conserva la ruta pública de cada imagen; el disco persistente de Render conserva el archivo. También se configura Express para reconocer el proxy HTTPS de Render y generar URLs `https`.
+Los formularios de subida deben usar `multipart/form-data` con una imagen en el campo `image`; se acepta un archivo de hasta 20 MB. La API convierte el buffer en una imagen del folder `marmoles_thomas` en Cloudinary y devuelve la URL HTTPS en `path`. Las respuestas `GET` usan ese mismo campo para que el frontend cargue las imágenes directamente desde Cloudinary.
 
 ## Operaciones de administración
 

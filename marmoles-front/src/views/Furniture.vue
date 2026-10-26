@@ -49,7 +49,7 @@
 <script setup lang="ts">
 // VUE
 import { onBeforeMount, ref } from 'vue';
-import { useRouter } from 'vue-router';
+import { useHomeNavigation } from '@/composables/useHomeNavigation';
 
 //AXIOS
 import axios from 'axios';
@@ -59,12 +59,12 @@ import { baseUrl } from '@/utilities';
 
 // DATA
 const detailsWorks = ref<any>([]);
-const router = useRouter();
+const { navigateToHomeSection } = useHomeNavigation();
 const isLoading = ref(true);
 const base = baseUrl
 
 function goBack() {
-    router.back()
+    void navigateToHomeSection('nuestrosTrabajos');
 }
 
 

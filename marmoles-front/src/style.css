@@ -11,7 +11,7 @@ body,
     overflow-x: clip;
 }
 .arreglo-scroll {
-    scroll-margin-top: 14rem; 
+    scroll-margin-top: 6rem;
 }
 
 .page-fade-up-enter-active,
@@ -21,18 +21,40 @@ body,
 
 .page-fade-up-enter-from {
     opacity: 0;
-    transform: translateY(1.5rem);
+    transform: translateY(100vh);
 }
 
 .page-fade-up-leave-to {
     opacity: 0;
-    transform: translateY(-1.5rem);
+    transform: translateY(-100vh);
+}
+
+.page-no-transition-enter-active,
+.page-no-transition-leave-active {
+    transition: none;
+}
+
+.home-scroll-fade {
+    animation: home-scroll-fade 500ms ease both;
+}
+
+@keyframes home-scroll-fade {
+    from {
+        opacity: 0;
+        transform: translateY(1.5rem);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 @media (prefers-reduced-motion: reduce) {
     .page-fade-up-enter-active,
-    .page-fade-up-leave-active {
+    .page-fade-up-leave-active,
+    .home-scroll-fade {
         transition-duration: 1ms;
+        animation-duration: 1ms;
     }
 }
 
