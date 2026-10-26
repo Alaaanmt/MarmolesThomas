@@ -56,6 +56,21 @@ body,
         transition-duration: 1ms;
         animation-duration: 1ms;
     }
+
+    [data-aos] {
+        opacity: 1 !important;
+        transform: none !important;
+        transition: none !important;
+    }
+
+    #home-hero .hero-slide-image {
+        transition: none;
+    }
+
+    #home-hero .swiper-slide-active .hero-slide-image {
+        transform: none;
+    }
+
 }
 
 .color-swiper-arrow {
@@ -100,6 +115,14 @@ body,
 
 .color-swiper-arrow.swiper-button-next {
     right: 0.5rem;
+}
+
+#home-hero .hero-slide-image {
+    transition: transform 900ms ease;
+}
+
+#home-hero .swiper-slide-active .hero-slide-image {
+    transform: scale(1.025);
 }
 
 .order-checkbox {

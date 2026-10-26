@@ -57,7 +57,7 @@
         <img :src="darkMode ? '/img/moon.svg' : '/img/moonWhite.svg'" alt="" class="w-full h-full object-cover">
       </div>
       <label class="relative inline-flex items-center cursor-pointer">
-        <input type="checkbox" class="toggle" @change="dark()" />
+        <input type="checkbox" class="toggle" :checked="darkMode" @change="dark()" />
       </label>
     </div>
 
@@ -105,11 +105,11 @@
 // VUE
 import { computed, ref } from 'vue';
 import { RouterLink, RouterView, useRoute, useRouter } from 'vue-router';
-import { onMounted } from 'vue'; 
 import { useHomeNavigation, type HomeSection } from '@/composables/useHomeNavigation';
 
 //DATA
-const darkMode = ref(false);
+const darkMode = ref(localStorage.getItem('theme') === 'dark');
+document.documentElement.classList.toggle('dark', darkMode.value);
 const burger = ref(false);
 const isHomeFading = ref(false);
 const route = useRoute();
@@ -160,13 +160,8 @@ const social = [
 
 function dark() {
   darkMode.value = !darkMode.value;
-  if (darkMode.value) {
-    document.documentElement.classList.add('dark');
-    localStorage.setItem('theme', 'light');
-  } else {
-    document.documentElement.classList.remove('dark');
-    localStorage.setItem('theme', 'dark');
-  }
+  document.documentElement.classList.toggle('dark', darkMode.value);
+  localStorage.setItem('theme', darkMode.value ? 'dark' : 'light');
 }
 
 function mandarMensaje(): string {
@@ -195,16 +190,4 @@ function handleLogoClick() {
   }, 500);
 }
 
-
-
-onMounted(() => {
-  const savedTheme = localStorage.getItem('theme');
-  if (savedTheme === 'dark') {
-    darkMode.value = true;
-    document.documentElement.classList.add('dark');
-  } else {
-    darkMode.value = false;
-    document.documentElement.classList.remove('dark');
-  }
-});
 </script>
