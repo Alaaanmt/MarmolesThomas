@@ -44,20 +44,20 @@ import { onBeforeMount, ref } from 'vue';
 
 //AXIOS
 import axios from 'axios';
-import { useRouter } from 'vue-router';
+import { useHomeNavigation } from '@/composables/useHomeNavigation';
 
 //BaseUrl
 import { baseUrl } from '@/utilities';
 
 // DATA
 const detailsQuartz = ref<any>([]);
-const router = useRouter();
+const { navigateToHomeSection } = useHomeNavigation();
 const isLoading = ref(true);
 const base = baseUrl
 
 //Functions
 function goBack() {
-    router.back()
+    void navigateToHomeSection('colores');
 }
 
 // LIFECYCLES

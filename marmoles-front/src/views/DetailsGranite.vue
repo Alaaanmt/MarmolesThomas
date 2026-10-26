@@ -42,7 +42,7 @@
 <script setup lang="ts">
 // VUE
 import { onBeforeMount, ref } from 'vue';
-import { useRouter } from 'vue-router';
+import { useHomeNavigation } from '@/composables/useHomeNavigation';
 
 // BASE URL
 import { baseUrl } from '@/utilities';
@@ -52,13 +52,13 @@ import axios from 'axios';
 
 // DATA
 const detailsGranite = ref<any>([]);
-const router = useRouter();
+const { navigateToHomeSection } = useHomeNavigation();
 const isLoading = ref(true);
 const base = baseUrl
 
 //FUNCTIONS
 function goBack() {
-    router.back()
+    void navigateToHomeSection('colores');
 }
 
 

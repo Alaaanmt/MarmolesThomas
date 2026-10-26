@@ -1,18 +1,19 @@
 import { NextFunction, Request, Response } from 'express';
 import { getPool } from '../config/db';
-import { persistImages, removeUploadedFiles, runMulter } from '../utils/upload';
+import { persistImages, removeUploadedImages, runMulter, type PersistedImage } from '../utils/upload';
 import { PoolConnection, ResultSetHeader } from 'mysql2/promise';
 
 export async function subirImagenDT(req: Request, res: Response, next: NextFunction) {
-    const files = await runMulter(req, res);
+    let files: Express.Multer.File[] = [];
+    let uploadedImages: PersistedImage[] = [];
     let connection: PoolConnection | undefined;
     try {
+        files = await runMulter(req, res);
         const body = req.body as Record<string, unknown>;
         const nuestroTrabajoId = Number(body.nuestroTrabajoId);
         const titulo = typeof body.titulo === 'string' ? body.titulo.trim() : '';
 
         if (!Number.isInteger(nuestroTrabajoId) || nuestroTrabajoId < 1 || !titulo) {
-            await removeUploadedFiles(files);
             return res.status(400).json({
                 status: 'error',
                 message: 'Se requiere un "nuestroTrabajoId" válido y un "titulo"'
@@ -29,10 +30,10 @@ export async function subirImagenDT(req: Request, res: Response, next: NextFunct
         const pool = getPool();
         connection = await pool.getConnection();
         await connection.beginTransaction();
-        const results = await persistImages(files, connection);
+        uploadedImages = await persistImages(files, connection);
         const [rowDetalle] = await connection.execute<ResultSetHeader>(
             'INSERT INTO detallestrabajos (nuestroTrabajoId, titulo, imagen_id) VALUES (?, ?, ?)',
-            [nuestroTrabajoId, titulo, results[0].id]
+            [nuestroTrabajoId, titulo, uploadedImages[0].id]
         );
         await connection.commit();
 
@@ -43,15 +44,21 @@ export async function subirImagenDT(req: Request, res: Response, next: NextFunct
                 titulo: titulo,
                 nuestroTrabajoId: nuestroTrabajoId,
                 imagen: {
-                    id: results[0].id,
-                    nombre: results[0].nombre,
-                    path: results[0].path
+                    id: uploadedImages[0].id,
+                    nombre: uploadedImages[0].nombre,
+                    path: uploadedImages[0].path
                 }
             }
         });
     } catch (error) {
         if (connection) await connection.rollback();
-        await removeUploadedFiles(files);
+        if (uploadedImages.length > 0) {
+            try {
+                await removeUploadedImages(uploadedImages);
+            } catch (cleanupError) {
+                return next(new AggregateError([error, cleanupError], 'Falló la operación y la limpieza en Cloudinary'));
+            }
+        }
         return next(error);
     } finally {
         connection?.release();

@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
 import { PoolConnection, ResultSetHeader, RowDataPacket } from 'mysql2/promise';
 import { getPool } from '../config/db';
-import { persistImages, removeUploadedFiles, runMulter } from '../utils/upload';
+import { persistImages, removeUploadedImages, runMulter, type PersistedImage } from '../utils/upload';
 
 function parseId(value: string | string[] | undefined) {
   if (typeof value !== 'string') return null;
@@ -26,12 +26,12 @@ export async function actualizarDetalleTrabajo(req: Request, res: Response, next
   }
 
   let files: Express.Multer.File[] = [];
+  let uploadedImages: PersistedImage[] = [];
   let connection: PoolConnection | undefined;
   try {
     files = await runMulter(req, res);
     const fields = parseFields(req.body);
     if (!fields) {
-      await removeUploadedFiles(files);
       return res.status(400).json({
         status: 'error',
         message: 'Se requieren "nuestroTrabajoId" y "titulo" válidos'
@@ -46,14 +46,13 @@ export async function actualizarDetalleTrabajo(req: Request, res: Response, next
     );
     if (existing.length === 0) {
       await connection.rollback();
-      await removeUploadedFiles(files);
       return res.status(404).json({ status: 'error', message: 'No se encontró el trabajo' });
     }
 
-    const images = files.length ? await persistImages(files, connection) : [];
+    uploadedImages = files.length ? await persistImages(files, connection) : [];
     await connection.execute(
       'UPDATE detallestrabajos SET nuestroTrabajoId = ?, titulo = ?, imagen_id = COALESCE(?, imagen_id) WHERE id = ?',
-      [fields.nuestroTrabajoId, fields.titulo, images[0]?.id ?? null, id]
+      [fields.nuestroTrabajoId, fields.titulo, uploadedImages[0]?.id ?? null, id]
     );
     await connection.commit();
 
@@ -62,12 +61,18 @@ export async function actualizarDetalleTrabajo(req: Request, res: Response, next
       data: {
         id,
         ...fields,
-        ...(images[0] ? { imagen_id: images[0].id, imagen: images[0] } : {})
+        ...(uploadedImages[0] ? { imagen_id: uploadedImages[0].id, imagen: uploadedImages[0] } : {})
       }
     });
   } catch (error) {
     if (connection) await connection.rollback();
-    await removeUploadedFiles(files);
+    if (uploadedImages.length > 0) {
+      try {
+        await removeUploadedImages(uploadedImages);
+      } catch (cleanupError) {
+        return next(new AggregateError([error, cleanupError], 'Falló la operación y la limpieza en Cloudinary'));
+      }
+    }
     return next(error);
   } finally {
     connection?.release();

@@ -41,7 +41,7 @@
 <script setup lang="ts">
 // VUE
 import { onBeforeMount, ref } from 'vue';
-import { useRouter } from 'vue-router';
+import { useHomeNavigation } from '@/composables/useHomeNavigation';
 
 //BaseUrl
 import { baseUrl } from '@/utilities';
@@ -51,12 +51,12 @@ import axios from 'axios';
 
 // DATA
 const detailsMarble = ref<any>([]);
-const router = useRouter();
+const { navigateToHomeSection } = useHomeNavigation();
 const isLoading = ref(true);
 const base = baseUrl
 
 function goBack() {
-    router.back()
+    void navigateToHomeSection('colores');
 }
 
 // LIFECYCLES

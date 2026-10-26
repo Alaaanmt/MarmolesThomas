@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
 import { getPool } from '../config/db';
 import { PoolConnection, ResultSetHeader, RowDataPacket } from 'mysql2/promise';
-import { persistImages, removeUploadedFiles, runMulter } from '../utils/upload';
+import { persistImages, removeUploadedImages, runMulter, type PersistedImage } from '../utils/upload';
 
 const materialTables = {
   granite: 'granitodetalles',
@@ -29,13 +29,13 @@ function parseId(value: string | string[] | undefined) {
 export function crearMaterial(material: Material) {
   return async (req: Request, res: Response, next: NextFunction) => {
     let files: Express.Multer.File[] = [];
+    let uploadedImages: PersistedImage[] = [];
     let connection: PoolConnection | undefined;
 
     try {
       files = await runMulter(req, res);
       const fields = parseMaterial(req.body);
       if (!fields) {
-        await removeUploadedFiles(files);
         return res.status(400).json({
           status: 'error',
           message: 'Se requieren "color" y "detalle"'
@@ -50,10 +50,10 @@ export function crearMaterial(material: Material) {
 
       connection = await getPool().getConnection();
       await connection.beginTransaction();
-      const images = await persistImages(files, connection);
+      uploadedImages = await persistImages(files, connection);
       const [result] = await connection.execute<ResultSetHeader>(
         `INSERT INTO ${materialTables[material]} (color, detalle, imagen_id) VALUES (?, ?, ?)`,
-        [fields.color, fields.detalle, images[0]?.id ?? null]
+        [fields.color, fields.detalle, uploadedImages[0]?.id ?? null]
       );
       await connection.commit();
 
@@ -62,13 +62,19 @@ export function crearMaterial(material: Material) {
         data: {
           id: result.insertId,
           ...fields,
-          imagen_id: images[0]?.id ?? null,
-          path: images[0]?.path ?? null
+          imagen_id: uploadedImages[0]?.id ?? null,
+          path: uploadedImages[0]?.path ?? null
         }
       });
     } catch (error) {
       if (connection) await connection.rollback();
-      await removeUploadedFiles(files);
+      if (uploadedImages.length > 0) {
+        try {
+          await removeUploadedImages(uploadedImages);
+        } catch (cleanupError) {
+          return next(new AggregateError([error, cleanupError], 'Falló la operación y la limpieza en Cloudinary'));
+        }
+      }
       return next(error);
     } finally {
       connection?.release();
@@ -79,6 +85,7 @@ export function crearMaterial(material: Material) {
 export function actualizarMaterial(material: Material) {
   return async (req: Request, res: Response, next: NextFunction) => {
     let files: Express.Multer.File[] = [];
+    let uploadedImages: PersistedImage[] = [];
     let connection: PoolConnection | undefined;
 
     try {
@@ -90,7 +97,6 @@ export function actualizarMaterial(material: Material) {
       files = await runMulter(req, res);
       const fields = parseMaterial(req.body);
       if (!fields) {
-        await removeUploadedFiles(files);
         return res.status(400).json({
           status: 'error',
           message: 'Se requieren "color" y "detalle"'
@@ -105,14 +111,13 @@ export function actualizarMaterial(material: Material) {
       );
       if (existing.length === 0) {
         await connection.rollback();
-        await removeUploadedFiles(files);
         return res.status(404).json({ status: 'error', message: 'No se encontró el material' });
       }
 
-      const images = files.length ? await persistImages(files, connection) : [];
+      uploadedImages = files.length ? await persistImages(files, connection) : [];
       await connection.execute(
         `UPDATE ${materialTables[material]} SET color = ?, detalle = ?, imagen_id = COALESCE(?, imagen_id) WHERE id = ?`,
-        [fields.color, fields.detalle, images[0]?.id ?? null, id]
+        [fields.color, fields.detalle, uploadedImages[0]?.id ?? null, id]
       );
       await connection.commit();
 
@@ -121,12 +126,18 @@ export function actualizarMaterial(material: Material) {
         data: {
           id,
           ...fields,
-          ...(images[0] ? { imagen_id: images[0].id, path: images[0].path } : {})
+          ...(uploadedImages[0] ? { imagen_id: uploadedImages[0].id, path: uploadedImages[0].path } : {})
         }
       });
     } catch (error) {
       if (connection) await connection.rollback();
-      await removeUploadedFiles(files);
+      if (uploadedImages.length > 0) {
+        try {
+          await removeUploadedImages(uploadedImages);
+        } catch (cleanupError) {
+          return next(new AggregateError([error, cleanupError], 'Falló la operación y la limpieza en Cloudinary'));
+        }
+      }
       return next(error);
     } finally {
       connection?.release();

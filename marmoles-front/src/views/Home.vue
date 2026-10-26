@@ -20,33 +20,39 @@
         </div>
     </section>
     <!--Separador-->
-    <div class=" border mb-10 border-gray-200 dark:border-gray-600"></div>
+    <div id="quienesSomos" class="border mb-10 border-gray-200 dark:border-gray-600 arreglo-scroll"></div>
 
     <!--QuienesSomos-->
-    <section id="quienesSomos" class="flex flex-col items-center arreglo-scroll" data-aos="fade-up"
+    <section class="px-6 md:px-12 lg:px-24" data-aos="fade-up"
         data-aos-duration="1500">
-        <div class="flex px-8 md:px-48 text-xl text-center md:text-2xl lg:text-3xl gap-2">
-            <p class="text-cyan-600">MARMOLES THOMAS</p>
-            <div class="border border-gray-400"></div>
-            <p> Mesadas y Muebles a Medida</p>
-        </div>
-        <div class="pt-14 space-y-3 px-12 md:px-40 lg:px-48 text-sm md:text-lg lg:text-xl text-center">
-            <p>En Mármoles Thomas trabajamos desde hace más de 32 años en la fabricación e instalación de mesadas,
-                vanitorys, pisos y revestimientos en mármol, granito y silestone. </p>
-            <p> Somos una empresa familiar que combina la experiencia artesanal con materiales de primera calidad
-                para
-                lograr resultados únicos y duraderos. También realizamos bajomesadas y alacenas en melamina de 18
-                mm,
-                adaptadas a cada espacio y estilo. Nuestro compromiso es ofrecer siempre excelencia en cada detalle,
-                para que cada proyecto refleje la calidad y dedicación que nos caracteriza.</p>
+        <div class="mx-auto grid max-w-6xl grid-cols-1 items-center gap-8 md:grid-cols-2 lg:gap-16">
+            <div class="space-y-6 text-center md:text-left">
+                <div class="flex flex-col gap-2 text-xl md:flex-row md:items-center md:gap-4 md:text-2xl lg:text-3xl">
+                    <p class="text-cyan-600">MÁRMOLES THOMAS</p>
+                    <div class="hidden h-8 border-l border-gray-400 md:block"></div>
+                    <p>Mesadas y muebles a medida</p>
+                </div>
+                <div class="space-y-3 text-sm leading-relaxed md:text-lg lg:text-xl">
+                    <p>En Mármoles Thomas trabajamos desde hace más de 32 años en la fabricación e instalación de mesadas,
+                        vanitorys, pisos y revestimientos en mármol, granito y silestone.</p>
+                    <p>Somos una empresa familiar que combina la experiencia artesanal con materiales de primera calidad
+                        para lograr resultados únicos y duraderos. También realizamos bajomesadas y alacenas en melamina
+                        de 18 mm, adaptadas a cada espacio y estilo. Nuestro compromiso es ofrecer excelencia en cada
+                        detalle, para que cada proyecto refleje la calidad y dedicación que nos caracteriza.</p>
+                </div>
+            </div>
+            <div class="h-64 overflow-hidden rounded-xl shadow-lg md:h-96">
+                <img src="/img/image.jpg" alt="Mesada de granito instalada en una cocina"
+                    class="h-full w-full object-cover">
+            </div>
         </div>
     </section>
 
     <!--Separador-->
-    <div class="border my-10 border-gray-200 dark:border-gray-600"></div>
+    <div id="nuestrosTrabajos" class="border my-10 border-gray-200 dark:border-gray-600 arreglo-scroll"></div>
 
     <!--NuestrosTrabajos-->
-    <section id="nuestrosTrabajos" class="px-4 md:px-40 lg:px-48 arreglo-scroll" data-aos="fade-up"
+    <section class="px-4 md:px-40 lg:px-48" data-aos="fade-up"
         data-aos-duration="1000">
         <p class="text-center text-2xl md:text-3xl lg:text-4xl text-cyan-600 uppercase font-semibold">Nuestros
             Trabajos
@@ -58,6 +64,7 @@
                 <div v-for="n in 3" :key="n" class="col-span-2 lg:col-span-1 group"
                     :class="{ 'col-start-2': (n - 1 === 2) }">
                     <div class="skeleton w-full aspect-square mx-auto md:h-50 md:w-50"></div>
+                    <div class="skeleton h-6 md:h-8 lg:h-9 w-3/4 mx-auto mt-4"></div>
                 </div>
             </template>
 
@@ -78,10 +85,10 @@
     </section>
 
     <!--Separador-->
-    <div class="border my-10 border-gray-200 dark:border-gray-600"></div>
+    <div id="colores" class="border my-10 border-gray-200 dark:border-gray-600 arreglo-scroll"></div>
 
     <!--Colores-->
-    <section id="colores" class="arreglo-scroll">
+    <section>
         <!--Colores Mesada-->
         <p class="text-center text-2xl md:text-3xl lg:text-4xl text-cyan-600 uppercase font-semibold" data-aos="fade-up">Colores</p>
         <div class="w-full grid grid-cols-2 lg:grid lg:grid-cols-3 gap-4 pt-10 lg:px-48 md:px-40 px-4" data-aos="fade-up">
@@ -90,6 +97,7 @@
             <template v-if="isLoading">
                 <div v-for="n in 6" :key="n" :class="{ 'hidden md:block': n >= 5 }">
                     <div class="skeleton w-full aspect-square mx-auto md:h-50 md:w-50"></div>
+                    <div class="skeleton h-6 w-2/3 mx-auto my-4"></div>
                 </div>
             </template>
 
@@ -115,7 +123,7 @@
             </div>
         </div>
         <!--Separador-->
-        <div class="border my-10 border-gray-200 dark:border-gray-600"></div>
+        <div id="coloresMelamina" class="border my-10 border-gray-200 dark:border-gray-600 arreglo-scroll"></div>
         <!--Colores Melamina-->
         <div class="w-full grid grid-cols-2 lg:grid lg:grid-cols-3 gap-4 pt-10 lg:px-48 md:px-40 px-4" data-aos="fade-up">
 
@@ -123,6 +131,7 @@
             <template v-if="isLoading">
                 <div v-for="n in 6" :key="n" :class="{ 'hidden md:block': n >= 5 }">
                     <div class="skeleton w-full aspect-square mx-auto md:h-50 md:w-50"></div>
+                    <div class="skeleton h-6 w-2/3 mx-auto my-4"></div>
                 </div>
             </template>
 
@@ -143,41 +152,6 @@
             data-aos="fade-up">
             Ver
             detalles de Melamina</RouterLink>
-        <!--Separador-->
-        <div class="border my-10 border-gray-200 dark:border-gray-600"></div>
-        <!--Colores Vanitorys-->
-        <div
-            class="w-full grid grid-cols-4 space-y-4 lg:space-y-0 lg:grid lg:grid-cols-3 gap-4 pt-10 lg:px-48 md:px-40 px-4"
-            data-aos="fade-up"
-        >
-
-            <!--SKELETON-->
-            <template v-if="isLoading">
-                <div v-for="n in 3" :key="n" class="col-span-2 lg:col-span-1" :class="{ 'col-start-2': (n - 1 === 2) }">
-                    <div class="skeleton w-full aspect-square mx-auto md:h-50 md:w-50"></div>
-                </div>
-            </template>
-
-            <!--CONTENIDO-->
-            <div v-else v-for="(item, index) in vanitory" :key="item.id" class="group col-span-2 lg:col-span-1" :class="{
-                'col-start-2': (index === 2)
-            }">
-                <div class="w-full aspect-square mx-auto md:h-50 md:w-50 cursor-pointer">
-                    <img :src="item.path != null ? item.path : '/img/logo.png'" alt=""
-                        class="w-full h-full object-cover transition-all duration-500 hover:scale-105">
-                </div>
-                <p
-                    class="text-center py-4 font-semibold group-hover:text-cyan-600 group-hover:font-semibold transition-all duration-500 ">
-                    {{ item.color }}</p>
-            </div>
-        </div>
-        <p class="text-center text-lg py-2 lg:px-64 md:px-40 px-12">Los vanitorys se realizan a medida y pueden
-            fabricarse en granito, mármol o silestone, en cualquiera de los colores disponibles.</p>
-
-        <RouterLink to="/vanity"
-            class="block text-center text-cyan-500 font-bold cursor-pointer hover:text-cyan-700 transition-all duration-300 pt-2"
-            data-aos="fade-up">
-            Ver más Vanitorys</RouterLink>
     </section>
 
     
@@ -248,8 +222,6 @@ const seeMore = [
 
 const furniture = ref<any>([]);
 
-const vanitory = ref<any>([]);
-
 const isLoading = ref(true);
 
 // LIFECYCLES
@@ -264,8 +236,6 @@ onBeforeMount(async () => {
         const responseMC = await axios.get(base +'/melaminacolor');
         furniture.value = responseMC.data.data;
 
-        const responseVC = await axios.get(base + '/vanitorycolor');
-        vanitory.value = responseVC.data.data;
     } catch (error) {
         console.error('Error fetching data:', error);
     } finally {

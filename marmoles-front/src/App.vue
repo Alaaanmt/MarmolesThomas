@@ -1,10 +1,10 @@
 <template>
   <section class="bg-gray-100 dark:bg-neutral-800 dark:text-white transition-all duration-300">
     <!--Header-->
-    <section v-if="!['/login', '/register', '/activation', '/password'].includes($route.path)"
+    <section id="site-navbar" v-if="!['/login', '/register', '/activation', '/password'].includes($route.path)"
       class="w-full h-24 flex items-center justify-between p-4 text-white fixed z-30 bg-cyan-800">
 
-      <router-link to="/" class="h-16 lg:h-24">
+      <router-link to="/" class="h-16 lg:h-24" @click.prevent="handleLogoClick">
         <img src="/img/logoSinFondo.png" alt="" class="w-full h-full object-cover">
       </router-link>
 
@@ -62,15 +62,15 @@
     </div>
 
     <RouterView v-slot="{ Component }">
-      <Transition :name="transitionName" mode="out-in">
-        <div :key="route.path">
+      <Transition :name="transitionName" mode="out-in" @after-enter="handleRouteAfterEnter">
+        <div :key="route.path" :class="{ 'home-scroll-fade': isHomeFading }">
           <component :is="Component" />
         </div>
       </Transition>
     </RouterView>
     <!--Footer-->
     <footer v-if="!['/login', '/register', '/activation', '/password'].includes($route.path)" id="contacto"
-      class="bg-cyan-800 text-white mt-12">
+      class="arreglo-scroll bg-cyan-800 text-white mt-12">
       <div class="pt-12 pb-6">
         <div class="flex items-center justify-center">
           <div class="space-y-4">
@@ -103,18 +103,38 @@
 
 <script setup lang="ts">
 // VUE
-import { computed, nextTick, ref } from 'vue';
+import { computed, ref } from 'vue';
 import { RouterLink, RouterView, useRoute, useRouter } from 'vue-router';
 import { onMounted } from 'vue'; 
+import { useHomeNavigation, type HomeSection } from '@/composables/useHomeNavigation';
 
 //DATA
 const darkMode = ref(false);
 const burger = ref(false);
+const isHomeFading = ref(false);
 const route = useRoute();
 const router = useRouter();
-const transitionName = computed(() => typeof route.meta.transition === 'string'
-  ? route.meta.transition
-  : 'page-fade-up');
+const { navigateToHomeSection } = useHomeNavigation();
+const previousRoutePath = ref(route.path);
+const transitionName = computed(() => {
+  if (route.path === '/' && previousRoutePath.value === '/createOrder') {
+    return 'page-no-transition';
+  }
+
+  return typeof route.meta.transition === 'string'
+    ? route.meta.transition
+    : 'page-fade-up';
+});
+
+router.afterEach((_to, from) => {
+  previousRoutePath.value = from.path;
+});
+
+function handleRouteAfterEnter() {
+  if (route.path === '/') {
+    window.dispatchEvent(new Event('home-route-entered'));
+  }
+}
 
 const social = [
   {
@@ -154,33 +174,25 @@ function mandarMensaje(): string {
   return ("https://wa.me/5491121666225?text=" + encodeURI(mensaje))
 }
 
-async function navigateToSection(id: string) {
+async function navigateToSection(id: HomeSection) {
   burger.value = false;
-  const changedPage = route.path !== '/';
-  if (changedPage || route.hash !== `#${id}`) {
-    await router.push({ path: '/', hash: `#${id}` });
-  }
-  if (changedPage) {
-    await new Promise(resolve => window.setTimeout(resolve, 400));
-  }
-  await nextTick();
+  await navigateToHomeSection(id);
+}
 
-  const section = document.getElementById(id);
-  if (!section) return;
+function handleLogoClick() {
+  if (route.path !== '/') {
+    void router.push('/');
+    return;
+  }
 
-  const start = window.scrollY;
-  const target = section.getBoundingClientRect().top + start - 112;
-  const startedAt = performance.now();
-  const duration = 1200;
-  const animate = (now: number) => {
-    const progress = Math.min((now - startedAt) / duration, 1);
-    const eased = progress < 0.5
-      ? 4 * progress ** 3
-      : 1 - Math.pow(-2 * progress + 2, 3) / 2;
-    window.scrollTo(0, start + (target - start) * eased);
-    if (progress < 1) requestAnimationFrame(animate);
-  };
-  requestAnimationFrame(animate);
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  isHomeFading.value = false;
+  requestAnimationFrame(() => {
+    isHomeFading.value = true;
+  });
+  window.setTimeout(() => {
+    isHomeFading.value = false;
+  }, 500);
 }
 
 
