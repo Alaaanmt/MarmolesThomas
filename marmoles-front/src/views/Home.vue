@@ -184,7 +184,7 @@
             <source src="/video/videoMarmoles.mp4" type="video/mp4">
         </video>
         <div class="absolute inset-0 -z-10 bg-neutral-800/75"></div>
-        <div class="mx-auto max-w-6xl px-6 py-28 md:px-12 md:py-36">
+        <div class="mx-auto max-w-6xl px-6 py-36 md:px-12 md:py-44">
             <h2 id="trayectoria-title" class="mb-12 text-center text-3xl font-semibold md:mb-16 md:text-4xl"
                 data-aos="fade-up">Experiencia que se nota en cada detalle</h2>
             <div class="grid grid-cols-1 gap-10 text-center md:grid-cols-3 md:gap-8">
@@ -225,7 +225,7 @@
                         <div class="skeleton h-5 w-2/3"></div>
                     </div>
                 </template>
-                <div v-else v-for="item in furniture.slice(0, 4)" :key="item.id" class="group">
+                <div v-else v-for="item in displayedFurniture" :key="item.id" class="group">
                     <div class="aspect-[4/3] overflow-hidden bg-gray-200 dark:bg-neutral-700">
                         <img :src="item.path ?? '/img/logo.png'" :alt="item.color"
                             class="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105">
@@ -243,7 +243,7 @@
 
 <script setup lang="ts">
 // VUE
-import { onBeforeMount, onBeforeUnmount, onMounted, ref } from 'vue';
+import { computed, onBeforeMount, onBeforeUnmount, onMounted, ref } from 'vue';
 import { RouterLink } from 'vue-router';
 
 //AXIOS
@@ -288,6 +288,11 @@ const imagesCarrousel = [
 const works = ref<any>([]);
 
 const furniture = ref<any>([]);
+const displayedFurniture = computed(() => furniture.value.slice(0, 4).map((item: any) => (
+    item.color?.toLowerCase().includes('negra')
+        ? { ...item, color: 'Wengue', path: '/img/furniture/Wengue.png' }
+        : item
+)));
 
 const isLoading = ref(true);
 const prefersReducedMotion = ref(false);

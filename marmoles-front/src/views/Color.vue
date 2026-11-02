@@ -1,359 +1,249 @@
 <template>
-    <!--PASOS-->
-    <section class="flex justify-center pt-32 lg:px-48 md:px-40 px-4">
-        <div class="flex gap-4">
-            <span class="px-3 py-1 bg-gray-300 text-gray-600 rounded-full text-xs">Paso 1: Producto</span>
-            <span class="px-3 py-1 bg-cyan-700 text-white rounded-full text-xs">Paso 2: Material</span>
-            <span class="px-3 py-1 bg-gray-300 text-gray-600 rounded-full text-xs">Paso 3: Medidas</span>
+    <section class="mx-auto max-w-7xl px-6 pb-16 pt-32 md:px-12 lg:px-20">
+        <div class="mb-10 text-center">
+            <p class="mb-2 text-sm font-semibold uppercase tracking-widest text-cyan-700 dark:text-cyan-400">
+                Paso 3
+            </p>
+            <h1 class="text-3xl font-semibold md:text-4xl">Probá tu combinación</h1>
+            <p class="mx-auto mt-4 max-w-3xl leading-relaxed text-gray-600 dark:text-gray-300">
+                Elegí una piedra y una melamina para ver cómo pueden combinar. La escena 3D es orientativa y sirve para
+                    comparar materiales, proporciones y estilos antes de definir el trabajo final.
+            </p>
         </div>
-    </section>
 
-    <!--SELECCION DE PRODUCTOS-->
-    <section v-if="productId == 1 || productId == 3">
-        <p class="text-3xl font-semibold uppercase text-center py-8 ">Elegí el color</p>
-        <!--Granitos-->
-        <p class="text-center text-xl font-semibold pb-4 dark:text-cyan-700">Granitos</p>
-
-        <!--SKELETON-->
-        <div v-if="isLoading" class="swiper skeleton-granitos">
-            <div class="swiper-wrapper">
-                <div v-for="n in 5" :key="n" class="swiper-slide">
-                    <div class="flex flex-col items-center">
-                        <div class="skeleton h-32 w-32 rounded-full"></div>
-                        <div class="skeleton h-4 w-24 mt-2"></div>
-                    </div>
-                </div>
+        <div v-if="isFurnitureOnly" class="mb-10 border border-cyan-200 bg-cyan-50 p-5 dark:border-cyan-900 dark:bg-cyan-950">
+            <p class="font-semibold text-cyan-900 dark:text-cyan-100">
+                Elegiste un mueble solo
+            </p>
+            <p class="mt-1 text-sm leading-relaxed text-cyan-800 dark:text-cyan-200">
+                ¿Con qué querés verlo combinado? Esto es únicamente una muestra visual y no se agrega como producto al
+                resumen.
+            </p>
+            <div class="mt-4 flex flex-wrap gap-3">
+                <label v-for="option in companionOptions" :key="option.value"
+                    class="flex cursor-pointer items-center gap-2 border px-4 py-3 text-sm font-semibold"
+                    :class="previewCompanion === option.value ? 'border-cyan-700 bg-white dark:border-cyan-400 dark:bg-neutral-900' : 'border-cyan-200 dark:border-cyan-800'">
+                    <input v-model="previewCompanion" type="radio" name="preview-companion" :value="option.value"
+                        class="accent-cyan-700">
+                    {{ option.label }}
+                </label>
             </div>
         </div>
 
-        <!--CONTENIDO-->
-        <div v-else class="swiper granitos">
-            <div class="swiper-wrapper">
-                <div class="swiper-slide" v-for="item in granites" :key="item.id">
-                    <div class="flex flex-col items-center">
-                        <div class="w-32 aspect-square rounded-full overflow-hidden cursor-pointer"
-                            :class="selectedColorGranite === item.id ? 'border-4 border-cyan-700' : ''"
-                            @click="selectColorGranite(item.id); selectColor(item.id, item.color)">
-                            <img :src="item.path" class="object-cover w-full h-full hover:scale-110 transition-all">
-                        </div>
-                        <p class="pt-2 text-sm font-semibold uppercase text-center">{{ item.color }}</p>
-                    </div>
+        <div class="min-w-0 space-y-12">
+            <OrderPreview :show-countertop="showCountertop" :show-furniture="showFurniture"
+                :show-vanity="showVanity" :vanity-support="vanitySupport" :melamine-image="previewMelamineImage"
+                :stone-image="selectedStone?.path" :has-zocalo="hasZocalo" :is-wide-furniture="isWideFurniture"
+                :preview-label="previewLabel" />
+
+            <section>
+                <div class="mb-5">
+                    <h2 class="text-xl font-semibold">Piedra para tapa o mesada</h2>
+                    <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                        {{ stoneSelectionNote }}
+                    </p>
                 </div>
-            </div>
-            <button type="button" class="swiper-button-next color-swiper-arrow" aria-label="Ver más granitos">
-                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h15m-6-6 6 6-6 6" /></svg>
+
+                <div class="mb-6 flex overflow-x-auto border-b border-gray-200 dark:border-neutral-700">
+                    <button v-for="group in stoneGroups" :key="group.key" type="button"
+                        class="min-w-[7.5rem] flex-1 whitespace-nowrap border-b-2 px-3 py-3 text-sm font-semibold transition-colors sm:text-base"
+                        :class="activeStoneCategory === group.key
+                            ? 'border-cyan-700 text-cyan-700 dark:border-cyan-400 dark:text-cyan-300'
+                            : 'border-transparent text-gray-500 hover:text-cyan-700 dark:text-gray-400 dark:hover:text-cyan-300'"
+                        :aria-pressed="activeStoneCategory === group.key"
+                        @click="activeStoneCategory = group.key">
+                        {{ group.title }}
+                    </button>
+                </div>
+
+                <MaterialStrip v-if="activeStoneGroup" :key="activeStoneGroup.key" :title="activeStoneGroup.title"
+                    :items="activeStoneGroup.items"
+                    :selected-key="selectedStone ? `${selectedStone.category}:${selectedStone.id}` : undefined"
+                    :loading="isLoading" :skeleton-count="activeStoneGroup.key === 'marmoles' ? 3 : 5"
+                    :show-arrows="activeStoneGroup.key !== 'marmoles'" @select="selectStone" />
+            </section>
+
+            <section>
+                <div class="mb-4">
+                    <h2 class="text-xl font-semibold">Melamina para el mueble</h2>
+                    <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                        {{ melamineSelectionNote }}
+                    </p>
+                </div>
+                <MaterialStrip title="Melaminas" :items="melamines"
+                    :selected-key="selectedMelamine ? `${selectedMelamine.category}:${selectedMelamine.id}` : undefined"
+                    :loading="isLoading" :skeleton-count="5" show-arrows @select="selectMelamine" />
+            </section>
+        </div>
+
+        <p v-if="formError" class="mt-8 text-center font-medium text-red-600" role="alert">{{ formError }}</p>
+
+        <div class="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
+            <button type="button" class="border-2 px-5 py-2 font-semibold transition-colors"
+                :class="canContinue
+                    ? 'border-cyan-700 text-cyan-700 hover:bg-cyan-700 hover:text-white dark:border-cyan-400 dark:text-cyan-300 dark:hover:bg-cyan-700 dark:hover:text-white'
+                    : 'cursor-not-allowed border-gray-300 text-gray-400'"
+                :disabled="!canContinue" @click="continueToSummary">
+                Ver resumen
             </button>
-            <button type="button" class="swiper-button-prev color-swiper-arrow" aria-label="Ver granitos anteriores">
-                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12H5m6 6-6-6 6-6" /></svg>
-            </button>
-        </div>
-        <!--Silestones-->
-        <p class="text-center text-xl font-semibold pt-8 pb-4  dark:text-cyan-700">Silestones</p>
-
-        <!--SKELETON-->
-        <div v-if="isLoading" class="swiper skeleton-quartz">
-            <div class="swiper-wrapper">
-                <div v-for="n in 5" :key="n" class="swiper-slide">
-                    <div class="flex flex-col items-center">
-                        <div class="skeleton h-32 w-32 rounded-full"></div>
-                        <div class="skeleton h-4 w-24 mt-2"></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!--CONTENIDO-->
-        <div v-else class="swiper quartz">
-            <div class="swiper-wrapper">
-                <div class="swiper-slide" v-for="item in quartz" :key="item.id">
-                    <div class="flex flex-col items-center">
-                        <div class="w-32 aspect-square rounded-full overflow-hidden cursor-pointer "
-                            :class="selectedColorQuartz === item.id ? 'border-4 border-cyan-700' : ''"
-                            @click="selectColorQuartz(item.id); selectColor(item.id, item.color)">
-                            <img :src="item.path" class="object-cover w-full h-full hover:scale-110 transition-all">
-                        </div>
-                        <p class="pt-2 text-sm font-semibold uppercase text-center">{{ item.color }}</p>
-                    </div>
-                </div>
-            </div>
-            <button type="button" class="swiper-button-next color-swiper-arrow" aria-label="Ver más silestones">
-                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h15m-6-6 6 6-6 6" /></svg>
-            </button>
-            <button type="button" class="swiper-button-prev color-swiper-arrow" aria-label="Ver silestones anteriores">
-                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12H5m6 6-6-6 6-6" /></svg>
-            </button>
-        </div>
-        <!--Marmoles-->
-        <p class="text-center text-xl font-semibold dark:text-cyan-700 pt-8 pb-4">Marmoles</p>
-
-        <!--SKELETON-->
-        <div v-if="isLoading" class="swiper skeleton-marmoles">
-            <div class="swiper-wrapper">
-                <div v-for="n in 3" :key="n" class="swiper-slide">
-                    <div class="flex flex-col items-center">
-                        <div class="skeleton h-32 w-32 rounded-full"></div>
-                        <div class="skeleton h-4 w-24 mt-2"></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!--CONTENIDO-->
-        <div v-else class="swiper marmoles">
-            <div class="swiper-wrapper">
-                <div class="swiper-slide" v-for="item in marbles" :key="item.id">
-                    <div class="flex flex-col items-center">
-                        <div class="w-32 aspect-square rounded-full overflow-hidden cursor-pointer"
-                            :class="selectedColorMarble === item.id ? 'border-4 border-cyan-700' : ''"
-                            @click="selectColorMarble(item.id); selectColor(item.id, item.color)">
-                            <img :src="item.path" class="object-cover w-full h-full hover:scale-110 transition-all">
-                        </div>
-                        <p class="pt-2 text-sm font-semibold uppercase text-center">{{ item.color }}</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!--SELECCION DE PRODUCTOS-->
-    <section v-if="productId == 2">
-        <p class="text-3xl font-semibold uppercase text-center pt-8 ">Elegí el color</p>
-        <!--Melaminas-->
-        <p class="text-center text-xl font-semibold pt-8 pb-4 dark:text-cyan-700">Melaminas</p>
-       
-        <!--SKELETON-->
-        <div v-if="isLoading" class="swiper skeleton-melaminas">
-            <div class="swiper-wrapper">
-                <div v-for="n in 5" :key="n" class="swiper-slide">
-                    <div class="flex flex-col items-center">
-                        <div class="skeleton h-32 w-32 rounded-full"></div>
-                        <div class="skeleton h-4 w-24 mt-2"></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!--CONTENIDO-->
-        <div v-else class="swiper melaminas">
-            <div class="swiper-wrapper">
-                <div class="swiper-slide" v-for="item in melamines" :key="item.id">
-                    <div class="flex flex-col items-center">
-                        <div class="w-32 aspect-square rounded-full overflow-hidden cursor-pointer"
-                            :class="selectedColorMelamine === item.id ? 'border-4 border-cyan-700' : ''"
-                            @click="selectColorMelamine(item.id); selectColor(item.id, item.color)">
-                            <img :src="item.path" class="object-cover w-full h-full hover:scale-110 transition-all">
-                        </div>
-                        <p class="pt-2 text-sm w-1/2 font-semibold uppercase text-center">{{ item.color }}</p>
-                    </div>
-                </div>
-            </div>
-            <button type="button" class="swiper-button-next color-swiper-arrow" aria-label="Ver más melaminas">
-                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h15m-6-6 6 6-6 6" /></svg>
-            </button>
-            <button type="button" class="swiper-button-prev color-swiper-arrow" aria-label="Ver melaminas anteriores">
-                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12H5m6 6-6-6 6-6" /></svg>
+            <button type="button" class="px-5 py-2 text-sm font-semibold hover:text-cyan-700 dark:hover:text-cyan-400"
+                @click="goBack">
+                Volver
             </button>
         </div>
     </section>
-
-    <!--BOTONES-->
-    <div class="flex pt-8 space-y-2 flex-col justify-center items-center">
-        <RouterLink :to="`/measures/${productId}`" class="px-4 py-2 border-2 cursor-pointer" :class="buttonFinalizarDisabled
-            ? 'border-gray-300 text-gray-300 cursor-not-allowed pointer-events-none'
-            : 'border-cyan-700 text-cyan-700 bg-white dark:bg-cyan-700 dark:text-white'">Siguiente</RouterLink>
-        <RouterLink to="/createOrder" class="cursor-pointer">Volver</RouterLink>
-    </div>
 </template>
 
 <script setup lang="ts">
+import { computed, onMounted, ref } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import axios from 'axios'
+import OrderPreview from '@/components/OrderPreview.vue'
+import MaterialStrip from '@/components/MaterialStrip.vue'
+import { useOrderStore } from '@/stores/Order'
+import { baseUrl } from '@/utilities'
+import type { MaterialOption, OrderProductId } from '@/types/order'
 
-// VUE
-import { onMounted, ref, nextTick } from 'vue';
-import { useRoute } from 'vue-router';
-import { useOrderStore } from '@/stores/Order';
+interface ApiMaterial {
+    id: number
+    color: string
+    path: string
+}
 
-//AXIOS
-import axios from 'axios';
+interface MaterialGroup {
+    key: 'granitos' | 'silestones' | 'marmoles'
+    title: string
+    items: MaterialOption[]
+}
 
-//BaseUrl
-import { baseUrl } from '@/utilities';
+const route = useRoute()
+const router = useRouter()
+const orderStore = useOrderStore()
+const isLoading = ref(true)
+const formError = ref('')
+const granites = ref<MaterialOption[]>([])
+const quartz = ref<MaterialOption[]>([])
+const marbles = ref<MaterialOption[]>([])
+const melamines = ref<MaterialOption[]>([])
+const previewCompanion = ref<'mesada' | 'vanitory' | null>(orderStore.previewCompanion)
+const selectedStone = ref<MaterialOption | null>(null)
+const selectedMelamine = ref<MaterialOption | null>(null)
+const activeStoneCategory = ref<MaterialGroup['key']>('granitos')
+const companionOptions = [
+    { value: 'mesada' as const, label: 'Con una mesada' },
+    { value: 'vanitory' as const, label: 'Con un vanitory' },
+]
 
-// SWIPER
-import Swiper from 'swiper';
-import { Navigation } from 'swiper/modules';
-import 'swiper/swiper-bundle.css';
-Swiper.use([Navigation]);
+const selectedIds = parseIds(String(route.params.colorId ?? ''))
+if (selectedIds.length && selectedIds.join('-') !== orderStore.selectedProductIds.join('-')) {
+    orderStore.setProducts(selectedIds)
+}
 
-// DATA
-const granites = ref<any>([]);
-const quartz = ref<any>([]);
-const marbles = ref<any>([]);
-const melamines = ref<any>([]);
-const selectedColorGranite = ref<number | null>(null); //arranca en null, puede ser number o null
-const selectedColorQuartz = ref<number | null>(null);
-const selectedColorMarble = ref<number | null>(null);
-const selectedColorMelamine = ref<number | null>(null);
-const buttonFinalizarDisabled = ref(true);
-const productId = ref<number | null>(null);
-const isLoading = ref(true);
-
-const base = baseUrl
-
-const orderStore = useOrderStore();
-
-//getFurnitureId from route params
-const route = useRoute();
-productId.value = route.params.colorId ? Number(route.params.colorId) : null;
-
-const swiperConfig = {
-    speed: 1000,
-    loop: true,
-    slidesPerView: 2,
-    slidesPerGroup: 2,
-    spaceBetween: -40,
-
-    breakpoints: {
-        768: {
-            slidesPerView: 4,
-            slidesPerGroup: 4,
-            spaceBetween: -50,
-        },
-        1024: {
-            slidesPerView: 5,
-            slidesPerGroup: 5,
-            spaceBetween: -50,
-        },
-    },
-};
-
-const marbleSwiperConfig = {
-    speed: 1000,
-    loop: false,
-    slidesPerView: 2,
-    slidesPerGroup: 2,
-    spaceBetween: 0,
-    breakpoints: {
-        768: { slidesPerView: 3, slidesPerGroup: 3, spaceBetween: 16 },
-        1024: { slidesPerView: 3, slidesPerGroup: 3, spaceBetween: 16 },
-    },
-};
-const skeletonSwipers: Swiper[] = [];
-
-//Functions
-function selectColorGranite(id: number) {
-    if (selectedColorGranite.value === id) { //si vuevlo a hacer click en el mismo ahi lo desselecciono
-        selectedColorGranite.value = null;
-    } else {
-        selectedColorGranite.value = id; //si hago click en otro color selecciono ese y desselecciono los demas
-        selectedColorQuartz.value = null;
-        selectedColorMarble.value = null;
+const isFurnitureOnly = computed(() => selectedIds.length === 1 && selectedIds[0] === 2)
+const hasMesada = computed(() => selectedIds.includes(1))
+const hasFurniture = computed(() => selectedIds.includes(2))
+const hasVanity = computed(() => selectedIds.includes(3))
+const showCountertop = computed(() => hasMesada.value || (isFurnitureOnly.value && previewCompanion.value === 'mesada'))
+const showVanity = computed(() => hasVanity.value || (isFurnitureOnly.value && previewCompanion.value === 'vanitory'))
+const showFurniture = computed(() => !showVanity.value && (hasFurniture.value || showCountertop.value))
+const vanitySupport = computed(() => {
+    const component = orderStore.getComponent(3)
+    if (component?.measurements.apoyo) return component.measurements.apoyo
+    return 'flotante'
+})
+const hasZocalo = computed(() => Boolean(orderStore.getComponent(1)?.measurements.conZocalo))
+const isWideFurniture = computed(() => Number(orderStore.getComponent(2)?.measurements.largo ?? 0) > 120)
+const previewLabel = computed(() => {
+    if (hasMesada.value && hasVanity.value) return 'mesada y vanitory'
+    if (hasMesada.value) return 'mesada y mueble'
+    if (hasVanity.value) return 'vanitory y mueble'
+    return previewCompanion.value === 'vanitory' ? 'mueble y vanitory de muestra' : 'mueble y mesada de muestra'
+})
+const stoneGroups = computed<MaterialGroup[]>(() => [
+    { key: 'granitos', title: 'Granitos', items: granites.value },
+    { key: 'silestones', title: 'Silestones', items: quartz.value },
+    { key: 'marmoles', title: 'Mármoles', items: marbles.value },
+])
+const activeStoneGroup = computed(() => stoneGroups.value.find(group => group.key === activeStoneCategory.value))
+const previewMelamineImage = computed(() => {
+    if (selectedMelamine.value?.color.toLowerCase().includes('blanca')) {
+        return '/img/furniture/melaminaBlancaEjemplo.png'
     }
-    buttonDisabled();
-}
-
-function selectColorQuartz(id: number) {
-    if (selectedColorQuartz.value === id) {
-        selectedColorQuartz.value = null;
-    } else {
-        selectedColorQuartz.value = id;
-        selectedColorGranite.value = null;
-        selectedColorMarble.value = null;
+    if (selectedMelamine.value?.color.toLowerCase().includes('wengue')) {
+        return '/img/furniture/Wengue.png'
     }
-    buttonDisabled();
+    return selectedMelamine.value?.path
+})
+const canContinue = computed(() => Boolean(selectedStone.value && selectedMelamine.value && (!isFurnitureOnly.value || previewCompanion.value)))
+const stoneSelectionNote = computed(() => hasMesada.value || hasVanity.value
+    ? 'Esta elección forma parte del pedido.'
+    : 'Se usa solo para mostrar cómo podría combinarse el mueble.')
+const melamineSelectionNote = computed(() => hasFurniture.value
+    ? 'Esta elección forma parte del pedido.'
+    : 'Se usa solo para mostrar cómo podría combinarse la piedra.')
+
+function parseIds(value: string): OrderProductId[] {
+    return value.split('-')
+        .map(Number)
+        .filter((id): id is OrderProductId => id === 1 || id === 2 || id === 3)
 }
 
-function selectColorMarble(id: number) {
-    if (selectedColorMarble.value === id) {
-        selectedColorMarble.value = null;
-    } else {
-        selectedColorMarble.value = id;
-        selectedColorGranite.value = null;
-        selectedColorQuartz.value = null;
-    }
-    buttonDisabled();
+function selectStone(item: MaterialOption) {
+    selectedStone.value = item
+    orderStore.setStoneColor(item.id, item.color, item.path, item.category)
 }
 
-function selectColorMelamine(id: number) {
-    if (selectedColorMelamine.value === id) {
-        selectedColorMelamine.value = null;
-    } else {
-        selectedColorMelamine.value = id;
-    }
-    buttonDisabled();
+function selectMelamine(item: MaterialOption) {
+    selectedMelamine.value = item
+    orderStore.setMelamineColor(item.id, item.color, item.path)
 }
 
-function buttonDisabled() {
-    if (selectedColorGranite.value !== null || selectedColorQuartz.value !== null || selectedColorMarble.value !== null || selectedColorMelamine.value !== null) {
-        buttonFinalizarDisabled.value = false;
-    } else {
-        buttonFinalizarDisabled.value = true;
-    }
+function normalizeMaterials(items: ApiMaterial[], category: MaterialOption['category']): MaterialOption[] {
+    return items.map(item => ({ id: item.id, color: item.color, path: item.path, category }))
 }
 
-function selectColor(id: number, color: string) {
-    orderStore.setColor(id, color);
-}
-
-const initRealSwipers = () => { 
-    const selectors = [".granitos", ".quartz", ".marmoles", ".melaminas"];
-    selectors.forEach(selector => {
-        const config = selector === '.marmoles'
-            ? marbleSwiperConfig
-            : {
-                ...swiperConfig,
-                navigation: {
-                    nextEl: `${selector} .color-swiper-arrow.swiper-button-next`,
-                    prevEl: `${selector} .color-swiper-arrow.swiper-button-prev`,
-                },
-            };
-        new Swiper(selector, config);
-    });
-};
-
-const initSkeletonSwipers = () => {
-    const selectors = [
-        '.skeleton-granitos',
-        '.skeleton-quartz',
-        '.skeleton-marmoles',
-        '.skeleton-melaminas',
-    ];
-
-    selectors.forEach(selector => {
-        const element = document.querySelector<HTMLElement>(selector);
-        if (!element) return;
-
-        const config = selector === '.skeleton-marmoles' ? marbleSwiperConfig : swiperConfig;
-        skeletonSwipers.push(new Swiper(element, {
-            ...config,
-            loop: false,
-            allowTouchMove: false,
-        }));
-    });
-};
-
-//LIFECYCLES
-onMounted(async () => {
-    initSkeletonSwipers();
+async function loadMaterials() {
     try {
-        const responseDG = await axios.get(base + '/granitodetalles');
-        granites.value = responseDG.data.data;
-        const responseDQ = await axios.get(base + '/silestonedetalles');
-        quartz.value = responseDQ.data.data;
-        const responseDM = await axios.get(base + '/marmoldetalles');
-        marbles.value = responseDM.data.data;
-        const responseDF = await axios.get(base + '/melaminadetalles');
-        melamines.value = responseDF.data.data;
+        const [graniteResponse, quartzResponse, marbleResponse, melamineResponse] = await Promise.all([
+            axios.get(`${baseUrl}/granitodetalles`),
+            axios.get(`${baseUrl}/silestonedetalles`),
+            axios.get(`${baseUrl}/marmoldetalles`),
+            axios.get(`${baseUrl}/melaminadetalles`),
+        ])
+        granites.value = normalizeMaterials(graniteResponse.data.data as ApiMaterial[], 'granitos')
+        quartz.value = normalizeMaterials(quartzResponse.data.data as ApiMaterial[], 'silestones')
+        marbles.value = normalizeMaterials(marbleResponse.data.data as ApiMaterial[], 'marmoles')
+        melamines.value = normalizeMaterials(melamineResponse.data.data as ApiMaterial[], 'melaminas')
     } catch (error) {
-        console.error('Error fetching data:', error);
+        console.error('Error fetching order materials:', error)
+        formError.value = 'No pudimos cargar los materiales. Intentá nuevamente.'
+    } finally {
+        isLoading.value = false
     }
-    finally {
-        skeletonSwipers.forEach(swiper => swiper.destroy(true, true));
-        skeletonSwipers.length = 0;
-        isLoading.value = false;
+}
 
-        await nextTick();
-        initRealSwipers();
+async function continueToSummary() {
+    if (!canContinue.value || !selectedStone.value || !selectedMelamine.value) {
+        formError.value = 'Elegí una piedra y una melamina para continuar.'
+        return
     }
-});
+    if (isFurnitureOnly.value && !previewCompanion.value) {
+        formError.value = 'Elegí si querés ver el mueble con una mesada o con un vanitory.'
+        return
+    }
+    orderStore.setPreviewCompanion(previewCompanion.value)
+    orderStore.setPreviewOnlyColors(
+        hasFurniture.value ? '' : selectedMelamine.value.color,
+        hasMesada.value || hasVanity.value ? '' : selectedStone.value.color,
+    )
+    await router.push(`/abstract/${selectedIds.join('-')}`)
+}
 
+function goBack() {
+    void router.back()
+}
+
+onMounted(async () => {
+    await loadMaterials()
+})
 </script>

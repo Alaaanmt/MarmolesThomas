@@ -20,8 +20,14 @@
                         <p class="text-[12px] md:text-sm text-gray-700 dark:text-gray-200 mb-6">{{ item.detalle }}</p>
                     </div>
                     <div class="w-1/3 h-1/3 md:w-1/4 md:h-1/4 mx-auto">
-                        <img :src="item.path != null ? item.path : '/img/logo.png'" alt=""
-                            class="w-full h-full aspect-square object-cover rounded-md ">
+                        <template v-if="item.color.toLowerCase().includes('negra')">
+                            <img :src="item.path != null ? item.path : '/img/logo.png'" :alt="item.color"
+                                class="w-full h-full aspect-square object-cover rounded-md dark:hidden">
+                            <img src="/img/furniture/MelaminaNegra.png" :alt="item.color"
+                                class="hidden w-full h-full aspect-square object-cover rounded-md dark:block">
+                        </template>
+                        <img v-else :src="item.path != null ? item.path : '/img/logo.png'" :alt="item.color"
+                            class="w-full h-full aspect-square object-cover rounded-md">
                     </div>
                 </div>
                 <div class="border my-10 border-gray-200 dark:border-gray-600"></div>
