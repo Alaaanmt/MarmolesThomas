@@ -95,7 +95,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import axios from 'axios'
 import OrderPreview from '@/components/OrderPreview.vue'
@@ -214,6 +214,10 @@ async function loadMaterials() {
         quartz.value = normalizeMaterials(quartzResponse.data.data as ApiMaterial[], 'silestones')
         marbles.value = normalizeMaterials(marbleResponse.data.data as ApiMaterial[], 'marmoles')
         melamines.value = normalizeMaterials(melamineResponse.data.data as ApiMaterial[], 'melaminas')
+        selectedStone.value = granites.value.concat(quartz.value, marbles.value)
+            .find(item => item.id === orderStore.selectedStoneId && item.category === orderStore.selectedStoneCategory) ?? null
+        selectedMelamine.value = melamines.value.find(item => item.id === orderStore.selectedMelamineId) ?? null
+        if (selectedStone.value) activeStoneCategory.value = selectedStone.value.category as MaterialGroup['key']
     } catch (error) {
         console.error('Error fetching order materials:', error)
         formError.value = 'No pudimos cargar los materiales. Intentá nuevamente.'
@@ -221,6 +225,10 @@ async function loadMaterials() {
         isLoading.value = false
     }
 }
+
+watch(previewCompanion, companion => {
+    orderStore.setPreviewCompanion(companion)
+})
 
 async function continueToSummary() {
     if (!canContinue.value || !selectedStone.value || !selectedMelamine.value) {
