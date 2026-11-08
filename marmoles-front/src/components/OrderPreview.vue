@@ -20,6 +20,7 @@
 import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 
 const props = withDefaults(defineProps<{
     showCountertop?: boolean
@@ -57,8 +58,10 @@ let camera: THREE.PerspectiveCamera | null = null
 let controls: OrbitControls | null = null
 let resizeObserver: ResizeObserver | null = null
 let animationFrame = 0
+let renderToken = 0
 
 const textureLoader = new THREE.TextureLoader()
+const gltfLoader = new GLTFLoader()
 
 function materialFromTexture(path: string, fallback: string, repeat = 2) {
     const material = new THREE.MeshStandardMaterial({
@@ -181,6 +184,57 @@ function addFurniture(currentScene: THREE.Scene, stone: THREE.Material, melamine
     currentScene.add(group)
 }
 
+function addFurnitureModel(
+    currentScene: THREE.Scene,
+    stone: THREE.Material,
+    melamine: THREE.Material,
+    token: number,
+) {
+    gltfLoader.load('/img/3d/sideboard_kitchen.glb', gltf => {
+        if (token !== renderToken || scene !== currentScene) return
+
+        const model = gltf.scene
+        const box = new THREE.Box3().setFromObject(model)
+        const size = box.getSize(new THREE.Vector3())
+        const maxSize = Math.max(size.x, size.y, size.z)
+        const scale = 5.2 / maxSize
+        model.scale.setScalar(scale)
+        const scaledBox = new THREE.Box3().setFromObject(model)
+        const modelSize = scaledBox.getSize(new THREE.Vector3())
+        const center = scaledBox.getCenter(new THREE.Vector3())
+        model.position.x -= center.x
+        model.position.z -= center.z
+        model.position.y -= scaledBox.min.y + 0.02
+
+        model.traverse(object => {
+            if (!(object instanceof THREE.Mesh)) return
+            object.castShadow = true
+            object.receiveShadow = true
+            const meshMaterial = Array.isArray(object.material) ? object.material[0] : object.material
+            const name = `${object.name} ${meshMaterial.name}`.toLowerCase()
+            object.material = name.includes('bacha') || name.includes('fregadero')
+                ? stone
+                : melamine
+        })
+        currentScene.add(model)
+        if (props.hasZocalo) {
+            addBox(
+                currentScene,
+                [modelSize.x + 0.18, 0.22, 0.08],
+                [0, modelSize.y + 0.13, -modelSize.z / 2 + 0.04],
+                stone,
+            )
+        }
+        isLoading.value = false
+    }, undefined, error => {
+        if (token !== renderToken || scene !== currentScene) return
+
+        console.error('Error loading 3D furniture model:', error)
+        addFurniture(currentScene, stone, melamine)
+        isLoading.value = false
+    })
+}
+
 function addCountertop(currentScene: THREE.Scene, stone: THREE.Material) {
     const group = new THREE.Group()
     addBox(group, [4.8, 0.1, 1.8], [0, 0.02, 0], stone)
@@ -230,6 +284,8 @@ function disposeScene() {
 
 function renderScene() {
     if (!canvas.value || !sceneHost.value) return
+    const token = ++renderToken
+    isLoading.value = true
     disposeScene()
     scene = new THREE.Scene()
     scene.background = new THREE.Color('#d8d1c7')
@@ -261,7 +317,7 @@ function renderScene() {
     const melamine = materialFromTexture(props.melamineImage, props.melamineFallback, 2)
 
     if (props.showVanity) addVanity(scene, stone, melamine)
-    else if (props.showFurniture) addFurniture(scene, stone, melamine)
+    else if (props.showFurniture) addFurnitureModel(scene, stone, melamine, token)
     else if (props.showCountertop) addCountertop(scene, stone)
 
     controls = new OrbitControls(camera, canvas.value)
@@ -280,7 +336,7 @@ function renderScene() {
         camera.updateProjectionMatrix()
     })
     resizeObserver.observe(sceneHost.value)
-    isLoading.value = false
+    if (!props.showFurniture) isLoading.value = false
 
     const animate = () => {
         if (!renderer || !scene || !camera || !controls) return
