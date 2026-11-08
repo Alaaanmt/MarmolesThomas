@@ -196,15 +196,13 @@ function addFurnitureModel(
         const model = gltf.scene
         const box = new THREE.Box3().setFromObject(model)
         const size = box.getSize(new THREE.Vector3())
-        const maxSize = Math.max(size.x, size.y, size.z)
-        const scale = 5.2 / maxSize
+        const scale = 5 / size.x
         model.scale.setScalar(scale)
         const scaledBox = new THREE.Box3().setFromObject(model)
         const modelSize = scaledBox.getSize(new THREE.Vector3())
         const center = scaledBox.getCenter(new THREE.Vector3())
-        model.position.x -= center.x
-        model.position.z -= center.z
-        model.position.y -= scaledBox.min.y + 0.02
+        const floorY = -1.05
+        model.position.set(-center.x, floorY - scaledBox.min.y + 0.01, -center.z)
 
         model.traverse(object => {
             if (!(object instanceof THREE.Mesh)) return
@@ -212,19 +210,76 @@ function addFurnitureModel(
             object.receiveShadow = true
             const meshMaterial = Array.isArray(object.material) ? object.material[0] : object.material
             const name = `${object.name} ${meshMaterial.name}`.toLowerCase()
-            object.material = name.includes('bacha') || name.includes('fregadero')
-                ? stone
-                : melamine
+
+            if (!name.includes('bacha') && !name.includes('fregadero')) {
+                object.material = melamine
+                return
+            }
+
+            const geometry = object.geometry.clone()
+            const position = geometry.getAttribute('position')
+            const index = geometry.getIndex()
+            if (!index) {
+                object.material = stone
+                return
+            }
+
+            geometry.clearGroups()
+            const hidden = new THREE.MeshBasicMaterial({
+                transparent: true,
+                opacity: 0,
+                depthWrite: false,
+            })
+            let currentMaterial = -1
+            let rangeStart = 0
+
+            const flushGroup = (end: number) => {
+                if (currentMaterial >= 0 && end > rangeStart) {
+                    geometry.addGroup(rangeStart, end - rangeStart, currentMaterial)
+                }
+            }
+
+            for (let offset = 0; offset < index.count; offset += 3) {
+                const averageZ = (
+                    position.getZ(index.getX(offset)) +
+                    position.getZ(index.getX(offset + 1)) +
+                    position.getZ(index.getX(offset + 2))
+                ) / 3
+                const isZocalo = averageZ > 0.3 && averageZ < 0.4
+                const nextMaterial = isZocalo
+                    ? (props.hasZocalo ? 1 : 2)
+                    : averageZ >= 0.4 ? 1 : 0
+
+                if (nextMaterial !== currentMaterial) {
+                    flushGroup(offset)
+                    currentMaterial = nextMaterial
+                    rangeStart = offset
+                }
+            }
+            flushGroup(index.count)
+
+            object.geometry.dispose()
+            object.geometry = geometry
+            object.material = [melamine, stone, hidden]
         })
         currentScene.add(model)
-        if (props.hasZocalo) {
-            addBox(
-                currentScene,
-                [modelSize.x + 0.18, 0.22, 0.08],
-                [0, modelSize.y + 0.13, -modelSize.z / 2 + 0.04],
-                stone,
-            )
-        }
+
+        const sinkGroup = new THREE.Group()
+        const sinkY = floorY + modelSize.y * 0.8 + 0.02
+        const sinkWidth = Math.min(modelSize.x * 0.24, 1.25)
+        const sinkDepth = Math.min(modelSize.z * 0.46, 0.62)
+        const sinkZ = modelSize.z * 0.28
+        addBox(sinkGroup, [sinkWidth, 0.055, sinkDepth], [0, sinkY, sinkZ], new THREE.MeshStandardMaterial({
+            color: '#bfc5c8',
+            roughness: 0.2,
+            metalness: 0.72,
+        }))
+        addBox(sinkGroup, [sinkWidth * 0.78, 0.025, sinkDepth * 0.7], [0, sinkY + 0.025, sinkZ], new THREE.MeshStandardMaterial({
+            color: '#5d6468',
+            roughness: 0.28,
+            metalness: 0.45,
+        }))
+        currentScene.add(sinkGroup)
         isLoading.value = false
     }, undefined, error => {
         if (token !== renderToken || scene !== currentScene) return
